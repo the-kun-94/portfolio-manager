@@ -5,6 +5,9 @@ import type {
   CashSummary,
   TradeCreate,
   SectorRankOut,
+  ReinvestmentRecommendationOut,
+  ParkCashRequest,
+  UnparkRequest,
 } from "./types";
 
 // Set in .env.local for dev, or as a Vercel Environment Variable for prod.
@@ -70,6 +73,21 @@ export const api = {
     request<TransactionOut>("/api/trades", {
       method: "POST",
       body: JSON.stringify(trade),
+    }),
+
+  reinvestmentRecommendation: () =>
+    request<ReinvestmentRecommendationOut>("/api/reinvestment/recommendation"),
+
+  parkCash: (body: ParkCashRequest) =>
+    request<TransactionOut>("/api/reinvestment/park", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  unparkCash: (body: UnparkRequest) =>
+    request<TransactionOut>("/api/reinvestment/unpark", {
+      method: "POST",
+      body: JSON.stringify(body),
     }),
 };
 

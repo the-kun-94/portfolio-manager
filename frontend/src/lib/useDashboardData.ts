@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
-import type { SignalOut, HoldingOut, TransactionOut, CashSummary, SectorRankOut } from "./types";
+import type {
+  SignalOut,
+  HoldingOut,
+  TransactionOut,
+  CashSummary,
+  SectorRankOut,
+  ReinvestmentRecommendationOut,
+} from "./types";
 
 // How often the terminal re-polls the Engine. The backend caches yfinance
 // pulls for 60s (see config.QUOTE_CACHE_TTL_SECONDS), so anything shorter
@@ -13,6 +20,7 @@ interface DashboardData {
   cash: CashSummary | null;
   trades: TransactionOut[];
   sectorRanks: SectorRankOut[];
+  reinvestment: ReinvestmentRecommendationOut | null;
   loading: boolean;
   error: string | null;
   lastUpdated: Date | null;
@@ -25,6 +33,7 @@ export function useDashboardData(): DashboardData {
   const [cash, setCash] = useState<CashSummary | null>(null);
   const [trades, setTrades] = useState<TransactionOut[]>([]);
   const [sectorRanks, setSectorRanks] = useState<SectorRankOut[]>([]);
+  const [reinvestment, setReinvestment] = useState<ReinvestmentRecommendationOut | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -32,18 +41,20 @@ export function useDashboardData(): DashboardData {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [signalsRes, holdingsRes, cashRes, tradesRes, sectorRes] = await Promise.all([
+      const [signalsRes, holdingsRes, cashRes, tradesRes, sectorRes, reinvestmentRes] = await Promise.all([
         api.decisionEngine(false),
         api.holdings(),
         api.cashSummary(),
         api.recentTrades(10),
         api.sectorStrength(),
+        api.reinvestmentRecommendation(),
       ]);
       setSignals(signalsRes);
       setHoldings(holdingsRes);
       setCash(cashRes);
       setTrades(tradesRes);
       setSectorRanks(sectorRes);
+      setReinvestment(reinvestmentRes);
       setError(null);
       setLastUpdated(new Date());
     } catch (err) {
@@ -59,5 +70,16 @@ export function useDashboardData(): DashboardData {
     return () => clearInterval(interval);
   }, [load]);
 
-  return { signals, holdings, cash, trades, sectorRanks, loading, error, lastUpdated, refresh: load };
+  return {
+    signals,
+    holdings,
+    cash,
+    trades,
+    sectorRanks,
+    reinvestment,
+    loading,
+    error,
+    lastUpdated,
+    refresh: load,
+  };
 }

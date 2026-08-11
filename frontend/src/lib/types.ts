@@ -80,3 +80,21 @@ export interface TradeCreate {
   notes?: string;
   tier_name?: TierName;
 }
+
+export interface ReinvestmentRecommendationOut {
+  cash_balance: number;
+  has_actionable_buy: boolean;
+  actionable_buy_tickers: string[];
+  recommended_etf: string;
+  reason: string;
+}
+
+export interface ParkCashRequest {
+  amount?: number;
+  ticker?: string;
+}
+
+export interface UnparkRequest {
+  ticker: string;
+  shares?: number;
+}
