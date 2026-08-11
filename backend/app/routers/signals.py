@@ -32,9 +32,13 @@ ACTIONABLE_SIGNALS = {"BUY_DIP", "HARVEST", "EXIT_TRAILING_STOP", "EXIT_STOP_LOS
 
 
 def _compute_sector_ranks() -> list[SectorRank]:
+    # Broad `except Exception`, not just ValueError — this runs once before
+    # the holdings loop in run_decision_engine, so an uncaught exception here
+    # (rate limit, network error — anything yfinance can throw) would crash
+    # the entire /api/decision-engine call, not just the sector data.
     try:
         benchmark_close = get_close_series(SECTOR_RS_BENCHMARK)
-    except ValueError as exc:
+    except Exception as exc:
         logger.warning("Sector strength unavailable: benchmark %s failed: %s", SECTOR_RS_BENCHMARK, exc)
         return []
 
@@ -42,7 +46,7 @@ def _compute_sector_ranks() -> list[SectorRank]:
     for etf_ticker in SECTOR_ETFS:
         try:
             sector_close_series[etf_ticker] = get_close_series(etf_ticker)
-        except ValueError as exc:
+        except Exception as exc:
             logger.warning("Skipping sector ETF %s: %s", etf_ticker, exc)
 
     return rank_sectors(sector_close_series, SECTOR_ETFS, benchmark_close, SECTOR_RS_LOOKBACK_DAYS)
