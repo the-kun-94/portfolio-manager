@@ -17,6 +17,13 @@ const TICKER_NAMES: Record<string, string> = {
   VOO: "Vanguard S&P 500 ETF",
   XLK: "Technology Select Sector SPDR Fund",
   O: "Realty Income",
+  GOOG: "Alphabet",
+  ORCL: "Oracle",
+  NOW: "ServiceNow",
+  TEL: "TE Connectivity",
+  LITE: "Lumentum",
+  RKLB: "Rocket Lab",
+  AAOI: "Applied Optoelectronics",
 };
 
 function formatMoney(value: number): string {
