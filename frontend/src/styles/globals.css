@@ -112,6 +112,58 @@ select {
 }
 
 /* ---------------------------------------------------------------------- */
+/* Login                                                                  */
+/* ---------------------------------------------------------------------- */
+
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.login-form {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 28px 24px;
+}
+
+.login-brand {
+  text-align: center;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.login-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.login-label input {
+  background: var(--panel-bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.login-label input:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+/* ---------------------------------------------------------------------- */
 /* Command Header                                                         */
 /* ---------------------------------------------------------------------- */
 

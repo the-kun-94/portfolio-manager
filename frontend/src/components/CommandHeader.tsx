@@ -49,6 +49,15 @@ export default function CommandHeader({ cash, lastUpdated, loading, error, onRef
         <button className="refresh-btn" onClick={onRefresh} disabled={loading}>
           {loading ? "SYNCING…" : "REFRESH"}
         </button>
+        <button
+          className="refresh-btn"
+          onClick={async () => {
+            await fetch("/api/logout", { method: "POST" });
+            window.location.href = "/login";
+          }}
+        >
+          LOG OUT
+        </button>
       </div>
 
       {error ? <div className="header-error">{error}</div> : null}
