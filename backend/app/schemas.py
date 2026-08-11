@@ -107,6 +107,12 @@ class ReinvestmentRecommendationOut(BaseModel):
     recommended_etf: str
     reason: str
 
+    # Growth/value style tilt — a leading indicator, informational only,
+    # never changes `recommended_etf`. None when price data is unavailable.
+    style_tilt: Optional[Literal["GROWTH_LEADING", "VALUE_LEADING", "NEUTRAL"]] = None
+    style_tilt_spread: Optional[float] = None
+    style_tilt_note: Optional[str] = None  # set only when the tilt is worth a second look
+
 
 class ParkCashRequest(BaseModel):
     amount: Optional[float] = Field(default=None, gt=0)   # omit to park the full cash balance

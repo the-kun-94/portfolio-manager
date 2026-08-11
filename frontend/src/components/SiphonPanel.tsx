@@ -91,6 +91,12 @@ export default function SiphonPanel({ reinvestment, holdings, onActed }: Props) 
             </p>
           )}
 
+          {reinvestment.style_tilt_note ? (
+            <p className={reinvestment.style_tilt === "VALUE_LEADING" ? "form-error" : "cell-sub"}>
+              {reinvestment.style_tilt_note}
+            </p>
+          ) : null}
+
           <div className="form-row">
             <label>
               Amount to park (blank = full balance)

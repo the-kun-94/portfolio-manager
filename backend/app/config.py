@@ -108,6 +108,21 @@ FOUNDATION_ETF_SECTOR_PROXY: dict[str, str] = {
 }
 
 # ---------------------------------------------------------------------------
+# Style Rotation tilt — a leading indicator surfaced next to the
+# Reinvestment Engine's recommendation, never a trigger on its own. The
+# sector-RS rank above is a confirming signal computed over a 63-day
+# window; by the time a sector clears that bar the rotation into it is
+# often already underway. Growth-vs-value spread is a faster-moving proxy
+# for the same rotation, so a shorter window here can flag "this pick may
+# be running out of room" (or "there may be more room than the trailing
+# number shows") before the sector-RS number catches up.
+# ---------------------------------------------------------------------------
+STYLE_GROWTH_ETF = "VUG"
+STYLE_VALUE_ETF = "VTV"
+STYLE_TILT_LOOKBACK_DAYS = 21     # ~1 trading month — shorter than SECTOR_RS_LOOKBACK_DAYS on purpose
+STYLE_TILT_NEUTRAL_BAND = 0.01    # spread within +/-1% reads as NEUTRAL rather than a lean
+
+# ---------------------------------------------------------------------------
 # Sector Relative Strength — informational context only, never a Dual-Gate
 # input. Ranks the 11 standard SPDR sector ETFs against a broad-market
 # benchmark over a trailing window, so a holding's drawdown can be read as

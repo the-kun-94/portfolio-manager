@@ -8,6 +8,8 @@ module never moves money on its own, it only recommends and — on request —
 logs a park/unpark trade through the same WAC/cash-ledger bookkeeping as
 every other position.
 """
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -18,10 +20,17 @@ from app.config import (
     FOUNDATION_ETF_SECTOR_PROXY,
     DEFAULT_FOUNDATION_ETF,
     FOUNDATION_ETF_TIER,
+    STYLE_GROWTH_ETF,
+    STYLE_VALUE_ETF,
+    STYLE_TILT_LOOKBACK_DAYS,
+    STYLE_TILT_NEUTRAL_BAND,
 )
-from app.engine.data_fetcher import get_live_price
+from app.engine.data_fetcher import get_close_series, get_live_price
 from app.engine.reinvestment import recommend_foundation_etf
+from app.engine.style_rotation import StyleTilt, compute_style_tilt
 from app.routers.signals import compute_sector_ranks, run_decision_engine
+
+logger = logging.getLogger("emotionless_executioner.reinvestment")
 
 router = APIRouter(prefix="/api/reinvestment", tags=["reinvestment"])
 
@@ -35,6 +44,40 @@ def _actionable_buy_tickers(db: Session) -> list[str]:
     return [s.ticker for s in signals if s.signal == "BUY_DIP"]
 
 
+def _compute_style_tilt() -> StyleTilt | None:
+    try:
+        growth_close = get_close_series(STYLE_GROWTH_ETF)
+        value_close = get_close_series(STYLE_VALUE_ETF)
+    except Exception as exc:
+        logger.warning("Style tilt unavailable: %s", exc)
+        return None
+    try:
+        return compute_style_tilt(
+            growth_close, value_close, STYLE_TILT_LOOKBACK_DAYS, STYLE_TILT_NEUTRAL_BAND
+        )
+    except ValueError as exc:
+        logger.warning("Style tilt unavailable: %s", exc)
+        return None
+
+
+def _style_tilt_note(tilt: StyleTilt, recommended_etf: str) -> str | None:
+    # Only worth a note when the tilt cuts against — or gets ahead of — the
+    # sector-RS pick above; a NEUTRAL tilt, or one that just agrees with the
+    # pick, adds nothing actionable.
+    if recommended_etf in FOUNDATION_ETF_SECTOR_PROXY and tilt.label == "VALUE_LEADING":
+        return (
+            f"Caution: value has led growth by {abs(tilt.spread):.1%} over the trailing "
+            f"{STYLE_TILT_LOOKBACK_DAYS} sessions — {recommended_etf}'s sector-RS lead may be fading."
+        )
+    if recommended_etf == DEFAULT_FOUNDATION_ETF and tilt.label == "GROWTH_LEADING":
+        return (
+            f"Note: growth has led value by {tilt.spread:.1%} over the trailing "
+            f"{STYLE_TILT_LOOKBACK_DAYS} sessions even though no sector has cleared the "
+            f"#1-and-outperforming bar yet — worth rechecking soon."
+        )
+    return None
+
+
 @router.get("/recommendation", response_model=schemas.ReinvestmentRecommendationOut)
 def recommendation(db: Session = Depends(get_db)):
     cash_balance = crud.get_cash_balance(db)
@@ -42,6 +85,7 @@ def recommendation(db: Session = Depends(get_db)):
         compute_sector_ranks(), FOUNDATION_ETF_SECTOR_PROXY, DEFAULT_FOUNDATION_ETF
     )
     buy_tickers = _actionable_buy_tickers(db)
+    tilt = _compute_style_tilt()
 
     return schemas.ReinvestmentRecommendationOut(
         cash_balance=cash_balance,
@@ -49,6 +93,9 @@ def recommendation(db: Session = Depends(get_db)):
         actionable_buy_tickers=buy_tickers,
         recommended_etf=rec.etf_ticker,
         reason=rec.reason,
+        style_tilt=tilt.label if tilt else None,
+        style_tilt_spread=tilt.spread if tilt else None,
+        style_tilt_note=_style_tilt_note(tilt, rec.etf_ticker) if tilt else None,
     )
 
 

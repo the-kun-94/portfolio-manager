@@ -81,12 +81,20 @@ export interface TradeCreate {
   tier_name?: TierName;
 }
 
+export type StyleTiltLabel = "GROWTH_LEADING" | "VALUE_LEADING" | "NEUTRAL";
+
 export interface ReinvestmentRecommendationOut {
   cash_balance: number;
   has_actionable_buy: boolean;
   actionable_buy_tickers: string[];
   recommended_etf: string;
   reason: string;
+
+  // Growth/value style tilt — a leading indicator, informational only,
+  // never changes recommended_etf. null when price data is unavailable.
+  style_tilt: StyleTiltLabel | null;
+  style_tilt_spread: number | null;
+  style_tilt_note: string | null;
 }
 
 export interface ParkCashRequest {
