@@ -95,3 +95,24 @@ class CashSummary(BaseModel):
     cash_balance: float
     active_equity_value: float
     total_liquidity: float
+
+
+# ---------------------------------------------------------------------------
+# Reinvestment Engine ("The Siphon")
+# ---------------------------------------------------------------------------
+class ReinvestmentRecommendationOut(BaseModel):
+    cash_balance: float
+    has_actionable_buy: bool               # True if a real BUY_DIP already wants this cash
+    actionable_buy_tickers: list[str]
+    recommended_etf: str
+    reason: str
+
+
+class ParkCashRequest(BaseModel):
+    amount: Optional[float] = Field(default=None, gt=0)   # omit to park the full cash balance
+    ticker: Optional[str] = None                            # omit to use the recommended ETF
+
+
+class UnparkRequest(BaseModel):
+    ticker: str
+    shares: Optional[float] = Field(default=None, gt=0)   # omit to sell the entire parked position

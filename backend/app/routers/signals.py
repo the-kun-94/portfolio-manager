@@ -31,7 +31,7 @@ router = APIRouter(prefix="/api", tags=["decision-engine"])
 ACTIONABLE_SIGNALS = {"BUY_DIP", "HARVEST", "EXIT_TRAILING_STOP", "EXIT_STOP_LOSS"}
 
 
-def _compute_sector_ranks() -> list[SectorRank]:
+def compute_sector_ranks() -> list[SectorRank]:
     # Broad `except Exception`, not just ValueError — this runs once before
     # the holdings loop in run_decision_engine, so an uncaught exception here
     # (rate limit, network error — anything yfinance can throw) would crash
@@ -59,7 +59,7 @@ def sector_strength(db: Session = Depends(get_db)):
     vs. SPY. Each call is logged to `sector_strength` for the audit trail,
     same pattern as `signal_log` below.
     """
-    ranks = _compute_sector_ranks()
+    ranks = compute_sector_ranks()
 
     for r in ranks:
         db.add(models.SectorStrength(
@@ -92,7 +92,7 @@ def run_decision_engine(
     # Computed once per call, not persisted here — informational context for
     # each row below, not a Dual-Gate input. GET /api/sector-strength is the
     # endpoint that logs the audit trail.
-    sector_by_label = {r.sector_label: r for r in _compute_sector_ranks()}
+    sector_by_label = {r.sector_label: r for r in compute_sector_ranks()}
 
     results: list[schemas.SignalOut] = []
     for holding in holdings:
@@ -167,7 +167,7 @@ def run_decision_engine_for_ticker(ticker: str, db: Session = Depends(get_db)):
     sector_rank_info = None
     if sector_label:
         sector_rank_info = next(
-            (r for r in _compute_sector_ranks() if r.sector_label == sector_label), None
+            (r for r in compute_sector_ranks() if r.sector_label == sector_label), None
         )
 
     return schemas.SignalOut(

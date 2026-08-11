@@ -95,6 +95,17 @@ QUOTE_CACHE_TTL_SECONDS = 60  # avoid hammering yfinance on repeated dashboard p
 # Reinvestment Engine ("The Siphon")
 # ---------------------------------------------------------------------------
 FOUNDATION_ETFS = ["VOO", "SMH"]   # parking lot when no active BUY signal wins the cash
+DEFAULT_FOUNDATION_ETF = "VOO"     # broad-market fallback when no sector proxy qualifies
+FOUNDATION_ETF_TIER = "STABLE"     # tier assigned to new parking-lot positions opened by the Siphon
+
+# Foundation ETFs that track a single sector get first claim on parked cash
+# when that sector is both the #1-ranked SPDR sector (by trailing RS vs. SPY)
+# and still outperforming the benchmark outright. Anything not listed here
+# (e.g. VOO) is sector-agnostic and only used as the DEFAULT_FOUNDATION_ETF
+# fallback.
+FOUNDATION_ETF_SECTOR_PROXY: dict[str, str] = {
+    "SMH": "Technology",
+}
 
 # ---------------------------------------------------------------------------
 # Sector Relative Strength — informational context only, never a Dual-Gate
