@@ -20,7 +20,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Emotionless Executioner</title>
+        <title>The Kun Algorithm</title>
         <meta
           name="description"
           content="Strictly mechanical, rule-based algorithmic trading terminal."

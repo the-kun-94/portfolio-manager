@@ -1,5 +1,5 @@
 -- ============================================================================
--- Emotionless Executioner — Database Schema
+-- The Kun Algorithm — Database Schema
 -- Replaces portfolio.csv with a relational ledger.
 -- Written for PostgreSQL; fully compatible with SQLite (dev default) —
 -- avoid Postgres-only types in application code paths that must run on both.

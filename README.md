@@ -1,4 +1,4 @@
-# Emotionless Executioner
+# The Kun Algorithm
 
 A strictly mechanical, rule-based algorithmic trading platform. No news
 feeds, no analyst ratings — just price, momentum, and position math.
@@ -6,7 +6,7 @@ feeds, no analyst ratings — just price, momentum, and position math.
 ## Directory Structure
 
 ```
-emotionless-executioner/
+the-kun-algorithm/
 ├── backend/                       # FastAPI "Engine"
 │   ├── requirements.txt
 │   └── app/

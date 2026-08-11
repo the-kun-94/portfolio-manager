@@ -25,7 +25,7 @@ export default function CommandHeader({ cash, lastUpdated, loading, error, onRef
   return (
     <header className="command-header">
       <div className="brand">
-        <span className="brand-mark">EMOTIONLESS EXECUTIONER</span>
+        <span className="brand-mark">THE KUN ALGORITHM</span>
         <span className={`status-dot ${error ? "status-error" : "status-ok"}`} />
         <span className="status-text">{error ? "ENGINE UNREACHABLE" : "LIVE"}</span>
         {readOnly ? <span className="status-text accent-red">READ-ONLY</span> : null}

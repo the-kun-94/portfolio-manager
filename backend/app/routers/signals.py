@@ -22,7 +22,7 @@ from app.engine.data_fetcher import get_close_series
 from app.engine.decision_engine import evaluate_holding
 from app.engine.sector_strength import SectorRank, rank_sectors
 
-logger = logging.getLogger("emotionless_executioner.signals")
+logger = logging.getLogger("the_kun_algorithm.signals")
 
 router = APIRouter(prefix="/api", tags=["decision-engine"])
 
