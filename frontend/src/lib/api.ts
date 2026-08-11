@@ -10,6 +10,10 @@ import type {
 // Falls back to a local backend so `npm run dev` works with zero config.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
 
+// Must match the backend's API_KEY (see app/auth.py) — required once
+// deployed publicly. Empty in local dev, where the backend doesn't enforce it.
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
+
 class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
@@ -23,8 +27,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${API_BASE_URL}${path}`, {
-      headers: { "Content-Type": "application/json" },
       ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(API_KEY ? { "X-API-Key": API_KEY } : {}),
+        ...options?.headers,
+      },
     });
   } catch {
     throw new ApiError(0, `Could not reach the Engine at ${API_BASE_URL}. Is it running?`);

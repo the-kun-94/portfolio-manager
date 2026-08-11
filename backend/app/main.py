@@ -17,9 +17,10 @@ config.TIER_CONFIG if they aren't present yet. This stands in for a real
 migration tool (Alembic) for now; swap it in before the schema needs to
 evolve without a table wipe.
 """
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.auth import verify_api_key
 from app.database import engine, SessionLocal, Base
 from app import models
 from app.config import TIER_CONFIG, CORS_ORIGINS
@@ -39,10 +40,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(signals.router)
-app.include_router(trades.router)
-app.include_router(portfolio.router)
-app.include_router(cash.router)
+_auth = [Depends(verify_api_key)]
+app.include_router(signals.router, dependencies=_auth)
+app.include_router(trades.router, dependencies=_auth)
+app.include_router(portfolio.router, dependencies=_auth)
+app.include_router(cash.router, dependencies=_auth)
 
 
 @app.on_event("startup")

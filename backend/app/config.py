@@ -34,6 +34,12 @@ CORS_ORIGINS = [
     if origin.strip()
 ]
 
+# Shared API key required on every endpoint except /api/health — this app
+# has no login system, so this is what stops a stranger with the URL from
+# reading or writing your data. Unset (empty) in local dev disables the
+# check; set it in production. See app/auth.py.
+API_KEY = os.getenv("API_KEY", "")
+
 
 # ---------------------------------------------------------------------------
 # Tier rules — mirrors the `tiers` table (DB is the source of truth at
