@@ -1,5 +1,5 @@
 """
-Central configuration for the Emotionless Executioner.
+Central configuration for The Kun Algorithm.
 
 Every threshold the strategy depends on lives here — not scattered through
 the engine — so the rulebook can be audited (and tuned) in one place without
@@ -14,8 +14,8 @@ from dataclasses import dataclass
 # ---------------------------------------------------------------------------
 # Defaults to a local SQLite file for zero-config dev. Point DATABASE_URL at
 # Postgres in production, e.g.:
-#   postgresql+psycopg2://user:pass@localhost:5432/emotionless_executioner
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./emotionless_executioner.db")
+#   postgresql+psycopg2://user:pass@localhost:5432/the_kun_algorithm
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./the_kun_algorithm.db")
 # Render/Heroku-style Postgres URLs are handed out as "postgres://" — SQLAlchemy
 # 2.x + psycopg2 require the "postgresql://" scheme, so normalize it here once
 # rather than making every deploy target remember to do it.

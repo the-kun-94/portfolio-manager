@@ -1,5 +1,5 @@
 """
-The Decision Engine — the mechanical brain of the Emotionless Executioner.
+The Decision Engine — the mechanical brain of The Kun Algorithm.
 
 Pure function core (`evaluate_holding`) takes a position + its price history
 and returns exactly one Signal. No I/O, no side effects, no randomness —

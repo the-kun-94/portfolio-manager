@@ -30,7 +30,7 @@ from app.engine.reinvestment import recommend_foundation_etf
 from app.engine.style_rotation import StyleTilt, compute_style_tilt
 from app.routers.signals import compute_sector_ranks, run_decision_engine
 
-logger = logging.getLogger("emotionless_executioner.reinvestment")
+logger = logging.getLogger("the_kun_algorithm.reinvestment")
 
 router = APIRouter(prefix="/api/reinvestment", tags=["reinvestment"])
 

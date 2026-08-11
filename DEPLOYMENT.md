@@ -1,4 +1,4 @@
-# Deploying the Emotionless Executioner to the cloud
+# Deploying The Kun Algorithm to the cloud
 
 Stack, and why: **Neon** (Postgres) + **Render** (FastAPI backend) + **Vercel**
 (Next.js frontend). All three have real free tiers as of August 2026 — no
@@ -24,16 +24,16 @@ it. Keep that in mind as this grows.
 Render and Vercel both deploy by watching a GitHub repo.
 
 ```bash
-cd emotionless-executioner
+cd the-kun-algorithm
 git init
 git add .
-git commit -m "Initial Emotionless Executioner scaffold"
+git commit -m "Initial The Kun Algorithm scaffold"
 ```
 
 Create an empty repo on GitHub (via github.com/new), then:
 
 ```bash
-git remote add origin https://github.com/<you>/emotionless-executioner.git
+git remote add origin https://github.com/<you>/the-kun-algorithm.git
 git branch -M main
 git push -u origin main
 ```
@@ -43,7 +43,7 @@ git push -u origin main
 ## 1. Database — Neon (free, no expiration)
 
 1. Go to [neon.tech](https://neon.tech) and sign up (GitHub login is fastest).
-2. Create a new project — name it `emotionless-executioner`.
+2. Create a new project — name it `the-kun-algorithm`.
 3. Neon gives you a connection string immediately, something like:
    `postgresql://<user>:<password>@<host>/<db>?sslmode=require`
 4. Copy it — you'll paste it into Render in the next step.
@@ -71,7 +71,7 @@ first time it boots against this database.
 
    ```bash
    curl https://emotionless-executioner-api.onrender.com/api/health
-   # {"status":"ok","system":"Emotionless Executioner"}
+   # {"status":"ok","system":"The Kun Algorithm"}
    ```
 
 If you'd rather not use the Blueprint file, the equivalent manual setup is:
