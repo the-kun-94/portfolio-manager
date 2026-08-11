@@ -79,6 +79,23 @@ class SignalOut(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Prospect Screener — evaluates a ticker you don't hold yet
+# ---------------------------------------------------------------------------
+class ProspectSignalOut(BaseModel):
+    ticker: str
+    tier: str
+    live_price: float
+    six_month_high: float
+    pct_from_high: float
+    ema8: float
+    ema21: float
+    trend: Literal["UP", "DN"]
+    signal: Literal["BUY_DIP", "WAIT"]
+    label: str
+    reason: str
+
+
+# ---------------------------------------------------------------------------
 # Sector Relative Strength leaderboard
 # ---------------------------------------------------------------------------
 class SectorRankOut(BaseModel):

@@ -208,3 +208,77 @@ def evaluate_holding(
         label=f"{emoji} {label_text}",
         reason=reason,
     )
+
+
+@dataclass
+class ProspectSignal:
+    ticker: str
+    tier: str
+    live_price: float
+    six_month_high: float
+    pct_from_high: float
+    ema8: float
+    ema21: float
+    trend: str                 # 'UP' | 'DN'
+    signal: str                  # 'BUY_DIP' | 'WAIT'
+    label: str
+    reason: str
+
+
+def screen_prospect(ticker: str, tier_name: str, close_prices: pd.Series) -> ProspectSignal:
+    """
+    Same Dual-Gate mechanics as evaluate_holding, for a ticker you don't hold
+    yet. There's no WAC to anchor off, so Gate 1 (price discount) is measured
+    from the trailing 6-month high instead of cost basis. Only BUY_DIP / WAIT
+    are possible outcomes — HARVEST/EXIT signals are meaningless without an
+    actual position and cost basis, so they don't apply here.
+    """
+    if tier_name not in TIER_CONFIG:
+        raise ValueError(f"Unknown tier '{tier_name}' — must be one of {list(TIER_CONFIG)}")
+    tier = TIER_CONFIG[tier_name]
+
+    live_price = float(close_prices.iloc[-1])
+    momentum = compute_momentum(close_prices)
+    peak_price, _peak_date = high_water_mark(close_prices, HIGH_WATER_MARK_LOOKBACK_DAYS)
+    pct_from_high = (live_price - peak_price) / peak_price if peak_price > 0 else 0.0
+
+    buy_gate1 = pct_from_high <= tier.buy_trigger_pct
+    trend_up = momentum.trend == "UP"
+    lookback_months = HIGH_WATER_MARK_LOOKBACK_DAYS // 30
+
+    if buy_gate1 and trend_up:
+        signal_key = "BUY_DIP"
+        reason = (
+            f"{pct_from_high:.0%} off its {lookback_months}mo high (${peak_price:.2f}), past "
+            f"the {tier_name} {tier.buy_trigger_pct:.0%} discount trigger, with momentum UP — "
+            f"confirmed dip, not a falling knife."
+        )
+    elif buy_gate1 and not trend_up:
+        signal_key = "WAIT"
+        reason = (
+            f"{pct_from_high:.0%} off its {lookback_months}mo high clears the {tier_name} "
+            f"discount trigger, but momentum is DN — falling knife, rule says never buy into "
+            f"a broken trend."
+        )
+    else:
+        signal_key = "WAIT"
+        reason = (
+            f"Only {pct_from_high:.0%} off its {lookback_months}mo high — hasn't reached the "
+            f"{tier_name} {tier.buy_trigger_pct:.0%} discount trigger yet."
+        )
+
+    emoji, label_text = SIGNAL_META[signal_key]
+
+    return ProspectSignal(
+        ticker=ticker,
+        tier=tier_name,
+        live_price=live_price,
+        six_month_high=peak_price,
+        pct_from_high=pct_from_high,
+        ema8=momentum.ema_fast,
+        ema21=momentum.ema_slow,
+        trend=momentum.trend,
+        signal=signal_key,
+        label=f"{emoji} {label_text}",
+        reason=reason,
+    )

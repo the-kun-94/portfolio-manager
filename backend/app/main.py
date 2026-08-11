@@ -24,7 +24,7 @@ from app.auth import verify_api_key
 from app.database import engine, SessionLocal, Base
 from app import models
 from app.config import TIER_CONFIG, CORS_ORIGINS
-from app.routers import signals, trades, portfolio, cash
+from app.routers import signals, trades, portfolio, cash, screener
 
 app = FastAPI(
     title="Emotionless Executioner",
@@ -45,6 +45,7 @@ app.include_router(signals.router, dependencies=_auth)
 app.include_router(trades.router, dependencies=_auth)
 app.include_router(portfolio.router, dependencies=_auth)
 app.include_router(cash.router, dependencies=_auth)
+app.include_router(screener.router, dependencies=_auth)
 
 
 @app.on_event("startup")
