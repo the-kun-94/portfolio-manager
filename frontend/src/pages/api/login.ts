@@ -5,6 +5,8 @@ import { makeSessionToken, timingSafeEqual } from "../../lib/authSession";
 
 const SITE_PASSWORD = process.env.SITE_PASSWORD || "";
 const SESSION_SECRET = process.env.SESSION_SECRET || "";
+// Server-side ceiling the signed token itself expires at, independent of
+// the cookie's browser-close lifetime below — belt and suspenders.
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 export default async function handler(req: Request): Promise<Response> {
@@ -33,14 +35,10 @@ export default async function handler(req: Request): Promise<Response> {
   }
 
   const token = await makeSessionToken(SESSION_SECRET, SESSION_TTL_SECONDS);
-  const cookie = [
-    `session=${token}`,
-    "HttpOnly",
-    "Secure",
-    "SameSite=Lax",
-    "Path=/",
-    `Max-Age=${SESSION_TTL_SECONDS}`,
-  ].join("; ");
+  // No Max-Age/Expires — a browser-session cookie, cleared when the
+  // browser fully closes (not just the tab). The token's own expiry above
+  // is the server-side fallback for browsers that keep it around anyway.
+  const cookie = [`session=${token}`, "HttpOnly", "Secure", "SameSite=Lax", "Path=/"].join("; ");
 
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
