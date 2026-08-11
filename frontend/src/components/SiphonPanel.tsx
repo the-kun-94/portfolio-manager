@@ -13,7 +13,10 @@ interface Props {
 const FOUNDATION_ETFS = ["VOO", "SMH"];
 
 function formatUsd(value: number): string {
-  return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
+  // Same near-zero clamp as CommandHeader.formatCurrency — cash-ledger
+  // float arithmetic can leave a tiny negative epsilon instead of exactly 0.
+  const clamped = Math.abs(value) < 0.005 ? 0 : value;
+  return clamped.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
 export default function SiphonPanel({ reinvestment, holdings, onActed }: Props) {
@@ -106,7 +109,7 @@ export default function SiphonPanel({ reinvestment, holdings, onActed }: Props) 
                 min="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder={reinvestment.cash_balance.toFixed(2)}
+                placeholder={Math.max(0, reinvestment.cash_balance).toFixed(2)}
               />
             </label>
           </div>

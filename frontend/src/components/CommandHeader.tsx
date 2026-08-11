@@ -1,7 +1,11 @@
 import type { CashSummary } from "../lib/types";
 
 function formatCurrency(value: number): string {
-  return value.toLocaleString("en-US", {
+  // Floating-point cash-ledger arithmetic can land on a tiny negative
+  // epsilon instead of exactly 0 (e.g. after a park/unpark round-trip) —
+  // clamp anything under half a cent so it doesn't render as "-$0".
+  const clamped = Math.abs(value) < 0.005 ? 0 : value;
+  return clamped.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 0,
