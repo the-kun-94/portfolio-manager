@@ -157,4 +157,11 @@ TICKER_SECTOR_MAP: dict[str, str] = {
     "TGT": "Consumer Discretionary",
     "SONY": "Consumer Discretionary",
     "O": "Real Estate",
+    "GOOG": "Communication Services",
+    "ORCL": "Technology",
+    "NOW": "Technology",
+    "TEL": "Industrials",
+    "LITE": "Technology",
+    "RKLB": "Industrials",
+    "AAOI": "Technology",
 }
