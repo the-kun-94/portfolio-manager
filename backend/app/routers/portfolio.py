@@ -30,8 +30,11 @@ def cash_summary(db: Session = Depends(get_db)):
     for holding in holdings:
         try:
             live_price = get_live_price(holding.ticker)
-        except ValueError:
-            live_price = float(holding.wac)  # fall back to cost basis if data fetch fails
+        except Exception:
+            # Any live-data failure (missing history, rate limit, network
+            # error) shouldn't take down the whole header — fall back to
+            # cost basis for that position's contribution.
+            live_price = float(holding.wac)
         active_equity_value += live_price * float(holding.shares)
 
     return schemas.CashSummary(

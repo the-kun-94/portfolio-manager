@@ -51,9 +51,10 @@ def run_decision_engine(
                 wac=float(holding.wac),
                 close_prices=close_series,
             )
-        except ValueError as exc:
-            # Bad/missing ticker data shouldn't take down the whole feed —
-            # log it and skip that one row.
+        except Exception as exc:
+            # Bad/missing ticker data (or any other live-data failure —
+            # rate limit, network error) shouldn't take down the whole
+            # feed — log it and skip that one row.
             logger.warning("Skipping %s: %s", holding.ticker, exc)
             continue
 
