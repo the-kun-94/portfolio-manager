@@ -1,0 +1,24 @@
+# Python / backend
+backend/.venv/
+__pycache__/
+**/__pycache__/
+backend/*.db
+backend/.env
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.local
+frontend/.env*.local
+
+# Personal data — don't publish real holdings/cost-basis to the repo
+backend/scripts/my_portfolio.csv
+backend/scripts/my_positions.csv
+
+# Local Claude Code settings
+.claude/
+
+# OS junk
+.DS_Store
+Thumbs.db

@@ -1,0 +1,24 @@
+# Render Blueprint — deploys the FastAPI backend as a web service.
+# Usage: push this repo to GitHub, then in Render: New -> Blueprint -> pick
+# this repo. Render reads this file and provisions the service below.
+#
+# The database is NOT defined here on purpose — we're pairing this with a
+# free Neon Postgres instance instead of Render's Postgres, because Render's
+# free Postgres tier deletes its data after 30 days (verified Aug 2026),
+# while Neon's free tier has no expiration. Create the Neon DB yourself
+# (neon.tech) and paste its connection string into DATABASE_URL below, or
+# in the Render dashboard after this deploys. See DEPLOYMENT.md.
+services:
+  - type: web
+    name: emotionless-executioner-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: DATABASE_URL
+        sync: false      # paste your Neon connection string in the Render dashboard
+      - key: CORS_ORIGINS
+        value: http://localhost:3000   # update to your Vercel URL after the frontend deploys
