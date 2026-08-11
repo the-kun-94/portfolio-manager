@@ -95,6 +95,13 @@ select {
   text-transform: uppercase;
 }
 
+.panel-subtitle {
+  margin: -8px 0 12px;
+  font-size: 11px;
+  color: var(--text-faint);
+  line-height: 1.4;
+}
+
 .action-feed,
 .ledger,
 .trade-form,

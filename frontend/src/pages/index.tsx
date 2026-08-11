@@ -4,12 +4,13 @@ import CommandHeader from "../components/CommandHeader";
 import ActionFeed from "../components/ActionFeed";
 import PortfolioTable from "../components/PortfolioTable";
 import DualGateLedger from "../components/DualGateLedger";
+import SectorStrengthPanel from "../components/SectorStrengthPanel";
 import TradeForm from "../components/TradeForm";
 import TransactionHistory from "../components/TransactionHistory";
 import { useDashboardData } from "../lib/useDashboardData";
 
 const Home: NextPage = () => {
-  const { signals, cash, trades, loading, error, lastUpdated, refresh } = useDashboardData();
+  const { signals, cash, trades, sectorRanks, loading, error, lastUpdated, refresh } = useDashboardData();
 
   return (
     <>
@@ -33,6 +34,7 @@ const Home: NextPage = () => {
           <ActionFeed signals={signals} />
           <PortfolioTable signals={signals} />
           <DualGateLedger signals={signals} />
+          <SectorStrengthPanel ranks={sectorRanks} />
           <div className="terminal-columns">
             <TradeForm onTraded={refresh} />
             <TransactionHistory trades={trades} />

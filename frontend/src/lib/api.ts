@@ -4,6 +4,7 @@ import type {
   TransactionOut,
   CashSummary,
   TradeCreate,
+  SectorRankOut,
 } from "./types";
 
 // Set in .env.local for dev, or as a Vercel Environment Variable for prod.
@@ -62,6 +63,8 @@ export const api = {
 
   recentTrades: (limit = 10) =>
     request<TransactionOut[]>(`/api/trades/recent?limit=${limit}`),
+
+  sectorStrength: () => request<SectorRankOut[]>("/api/sector-strength"),
 
   createTrade: (trade: TradeCreate) =>
     request<TransactionOut>("/api/trades", {

@@ -25,6 +25,7 @@ export default function DualGateLedger({ signals }: Props) {
               <th>Cost / Peak</th>
               <th>ROI</th>
               <th>8/21 EMA Trend</th>
+              <th>Sector</th>
               <th>Signal</th>
             </tr>
           </thead>
@@ -50,6 +51,16 @@ export default function DualGateLedger({ signals }: Props) {
                   </span>
                 </td>
                 <td>
+                  {s.sector_label ? (
+                    <>
+                      {s.sector_label}
+                      <span className="cell-sub">#{s.sector_rank} of 11</span>
+                    </>
+                  ) : (
+                    <span className="cell-sub">—</span>
+                  )}
+                </td>
+                <td>
                   <span className={`signal-badge signal-badge-${s.signal.toLowerCase()}`}>
                     {s.label}
                   </span>
@@ -58,7 +69,7 @@ export default function DualGateLedger({ signals }: Props) {
             ))}
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="empty-state">
+                <td colSpan={8} className="empty-state">
                   No active holdings yet — log a trade below to get started.
                 </td>
               </tr>

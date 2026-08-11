@@ -31,6 +31,18 @@ export interface SignalOut {
   suggested_sell_pct: number | null;
   label: string;
   reason: string;
+
+  // Sector Relative Strength — informational only, never affects `signal`.
+  sector_label: string | null;
+  sector_rank: number | null;
+  sector_relative_strength: number | null;
+}
+
+export interface SectorRankOut {
+  etf_ticker: string;
+  sector_label: string;
+  relative_strength: number;
+  rank: number;
 }
 
 export interface HoldingOut {

@@ -71,6 +71,22 @@ class SignalOut(BaseModel):
     label: str            # human-readable, emoji-prefixed for the Action Feed
     reason: str            # one-line explanation of why the signal fired
 
+    # Sector Relative Strength — informational only, does not affect `signal`.
+    # None for tickers with no mapped sector (e.g. broad-market/bond ETFs).
+    sector_label: Optional[str] = None
+    sector_rank: Optional[int] = None
+    sector_relative_strength: Optional[float] = None
+
+
+# ---------------------------------------------------------------------------
+# Sector Relative Strength leaderboard
+# ---------------------------------------------------------------------------
+class SectorRankOut(BaseModel):
+    etf_ticker: str
+    sector_label: str
+    relative_strength: float
+    rank: int
+
 
 # ---------------------------------------------------------------------------
 # Command Header

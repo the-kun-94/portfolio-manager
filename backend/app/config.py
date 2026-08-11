@@ -95,3 +95,40 @@ QUOTE_CACHE_TTL_SECONDS = 60  # avoid hammering yfinance on repeated dashboard p
 # Reinvestment Engine ("The Siphon")
 # ---------------------------------------------------------------------------
 FOUNDATION_ETFS = ["VOO", "SMH"]   # parking lot when no active BUY signal wins the cash
+
+# ---------------------------------------------------------------------------
+# Sector Relative Strength — informational context only, never a Dual-Gate
+# input. Ranks the 11 standard SPDR sector ETFs against a broad-market
+# benchmark over a trailing window, so a holding's drawdown can be read as
+# "the whole sector is down" vs. "this stock specifically is down."
+# ---------------------------------------------------------------------------
+SECTOR_RS_BENCHMARK = "SPY"
+SECTOR_RS_LOOKBACK_DAYS = 63   # ~3 trading months
+
+SECTOR_ETFS: dict[str, str] = {
+    "XLK": "Technology",
+    "XLF": "Financials",
+    "XLV": "Health Care",
+    "XLY": "Consumer Discretionary",
+    "XLP": "Consumer Staples",
+    "XLE": "Energy",
+    "XLI": "Industrials",
+    "XLU": "Utilities",
+    "XLB": "Materials",
+    "XLRE": "Real Estate",
+    "XLC": "Communication Services",
+}
+
+# Best-effort ticker -> sector label for showing each holding's sector rank
+# next to it. Unmapped tickers (e.g. broad-market/bond ETFs like VOO, VTES)
+# just skip that column — there's no meaningful single sector for them.
+TICKER_SECTOR_MAP: dict[str, str] = {
+    "AMD": "Technology",
+    "NVDA": "Technology",
+    "AMAT": "Technology",
+    "SMH": "Technology",
+    "XLK": "Technology",
+    "TGT": "Consumer Discretionary",
+    "SONY": "Consumer Discretionary",
+    "O": "Real Estate",
+}
