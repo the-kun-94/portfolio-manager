@@ -40,6 +40,13 @@ CORS_ORIGINS = [
 # check; set it in production. See app/auth.py.
 API_KEY = os.getenv("API_KEY", "")
 
+# Optional second key that authenticates but is only ever granted read
+# access (see app/auth.py's require_write_access) — issue this to a
+# viewer you want to see the dashboard without being able to execute
+# trades, park/unpark cash, or post deposits/withdrawals. Leave unset to
+# not offer read-only access at all.
+API_KEY_READONLY = os.getenv("API_KEY_READONLY", "")
+
 
 # ---------------------------------------------------------------------------
 # Tier rules — mirrors the `tiers` table (DB is the source of truth at

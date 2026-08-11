@@ -9,10 +9,13 @@ import SiphonPanel from "../components/SiphonPanel";
 import TradeForm from "../components/TradeForm";
 import TransactionHistory from "../components/TransactionHistory";
 import { useDashboardData } from "../lib/useDashboardData";
+import { useSessionRole } from "../lib/useSessionRole";
 
 const Home: NextPage = () => {
   const { signals, holdings, cash, trades, sectorRanks, reinvestment, loading, error, lastUpdated, refresh } =
     useDashboardData();
+  const role = useSessionRole();
+  const readOnly = role === "read";
 
   return (
     <>
@@ -31,15 +34,16 @@ const Home: NextPage = () => {
           loading={loading}
           error={error}
           onRefresh={refresh}
+          readOnly={readOnly}
         />
         <main className="terminal-main">
           <ActionFeed signals={signals} />
           <PortfolioTable signals={signals} />
           <DualGateLedger signals={signals} />
           <SectorStrengthPanel ranks={sectorRanks} />
-          <SiphonPanel reinvestment={reinvestment} holdings={holdings} onActed={refresh} />
+          <SiphonPanel reinvestment={reinvestment} holdings={holdings} onActed={refresh} readOnly={readOnly} />
           <div className="terminal-columns">
-            <TradeForm onTraded={refresh} />
+            <TradeForm onTraded={refresh} readOnly={readOnly} />
             <TransactionHistory trades={trades} />
           </div>
         </main>

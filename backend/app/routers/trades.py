@@ -2,13 +2,17 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth import require_write_access
 from app.database import get_db
 from app import models, schemas, crud
 
 router = APIRouter(prefix="/api/trades", tags=["trades"])
 
 
-@router.post("", response_model=schemas.TransactionOut, status_code=201)
+@router.post(
+    "", response_model=schemas.TransactionOut, status_code=201,
+    dependencies=[Depends(require_write_access)],
+)
 def create_trade(trade: schemas.TradeCreate, db: Session = Depends(get_db)):
     trade.ticker = trade.ticker.upper()
     try:

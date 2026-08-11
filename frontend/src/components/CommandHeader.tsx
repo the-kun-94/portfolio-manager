@@ -18,15 +18,17 @@ interface Props {
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
+  readOnly?: boolean;
 }
 
-export default function CommandHeader({ cash, lastUpdated, loading, error, onRefresh }: Props) {
+export default function CommandHeader({ cash, lastUpdated, loading, error, onRefresh, readOnly = false }: Props) {
   return (
     <header className="command-header">
       <div className="brand">
         <span className="brand-mark">EMOTIONLESS EXECUTIONER</span>
         <span className={`status-dot ${error ? "status-error" : "status-ok"}`} />
         <span className="status-text">{error ? "ENGINE UNREACHABLE" : "LIVE"}</span>
+        {readOnly ? <span className="status-text accent-red">READ-ONLY</span> : null}
       </div>
 
       <div className="liquidity-grid">

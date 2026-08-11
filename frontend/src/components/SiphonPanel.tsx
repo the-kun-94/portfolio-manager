@@ -6,6 +6,7 @@ interface Props {
   reinvestment: ReinvestmentRecommendationOut | null;
   holdings: HoldingOut[];
   onActed: () => void;
+  readOnly?: boolean;
 }
 
 // Mirrors backend/app/config.py FOUNDATION_ETFS — the only tickers the
@@ -19,7 +20,7 @@ function formatUsd(value: number): string {
   return clamped.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
-export default function SiphonPanel({ reinvestment, holdings, onActed }: Props) {
+export default function SiphonPanel({ reinvestment, holdings, onActed, readOnly = false }: Props) {
   const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -117,10 +118,12 @@ export default function SiphonPanel({ reinvestment, holdings, onActed }: Props) 
           {error ? <p className="form-error">{error}</p> : null}
           {successMsg ? <p className="form-success">{successMsg}</p> : null}
 
+          {readOnly ? <p className="panel-subtitle">Read-only session — park/unpark disabled.</p> : null}
+
           <button
             type="button"
             className="submit-btn submit-btn-buy"
-            disabled={busy || reinvestment.cash_balance <= 0}
+            disabled={busy || readOnly || reinvestment.cash_balance <= 0}
             onClick={handlePark}
           >
             {busy ? "WORKING…" : `PARK CASH → ${reinvestment.recommended_etf}`}
@@ -133,7 +136,7 @@ export default function SiphonPanel({ reinvestment, holdings, onActed }: Props) 
                   key={h.ticker}
                   type="button"
                   className="submit-btn submit-btn-sell"
-                  disabled={busy}
+                  disabled={busy || readOnly}
                   onClick={() => handleUnpark(h.ticker)}
                 >
                   UNPARK {h.ticker} ({h.shares.toFixed(4)} sh)
