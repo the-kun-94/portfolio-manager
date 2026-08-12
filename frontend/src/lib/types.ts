@@ -10,7 +10,7 @@ export type SignalType =
 
 export type Trend = "UP" | "DN";
 export type AnchorType = "WAC" | "HIGH_WATER_MARK";
-export type TierName = "GROWTH" | "STABLE";
+export type TierName = "GROWTH" | "STABLE" | "HIGH_VOL";
 
 export interface SignalOut {
   ticker: string;

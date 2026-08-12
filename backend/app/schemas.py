@@ -15,7 +15,7 @@ class TradeCreate(BaseModel):
     price: float = Field(gt=0)
     signal_type: Optional[str] = "MANUAL"
     notes: Optional[str] = None
-    tier_name: Optional[Literal["GROWTH", "STABLE"]] = None  # required only for a brand-new ticker
+    tier_name: Optional[Literal["GROWTH", "STABLE", "HIGH_VOL"]] = None  # required only for a brand-new ticker
 
 
 class TransactionOut(BaseModel):

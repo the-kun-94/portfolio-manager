@@ -62,6 +62,14 @@ class TierConfig:
 TIER_CONFIG: dict[str, TierConfig] = {
     "GROWTH": TierConfig(buy_trigger_pct=-0.10, harvest_target_pct=0.15, stop_loss_pct=-0.15),
     "STABLE": TierConfig(buy_trigger_pct=-0.05, harvest_target_pct=0.10, stop_loss_pct=-0.08),
+    # Volatility-calibrated (not picked by feel): threshold = k * trailing
+    # ~1-month realized vol, with k derived from GROWTH's own implied risk
+    # tolerance (k_buy≈0.83, k_stop≈1.24, averaged across GROWTH names that
+    # actually fit its thresholds well). AAOI/RKLB/LITE average ~32% monthly
+    # vol vs. ~7-21% for the rest of GROWTH — same dollar-move thresholds
+    # were firing on normal noise for these three. Revisit ~2026-09-11 to
+    # see if k needs adjusting once there's a month of live behavior to look at.
+    "HIGH_VOL": TierConfig(buy_trigger_pct=-0.27, harvest_target_pct=0.40, stop_loss_pct=-0.40),
 }
 
 

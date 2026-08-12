@@ -7,7 +7,7 @@ interface Props {
   readOnly?: boolean;
 }
 
-const TIERS: TierName[] = ["GROWTH", "STABLE"];
+const TIERS: TierName[] = ["GROWTH", "STABLE", "HIGH_VOL"];
 
 export default function TradeForm({ onTraded, readOnly = false }: Props) {
   const [ticker, setTicker] = useState("");

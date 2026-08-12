@@ -10,7 +10,7 @@
 --    Seeded once; edit thresholds here, not in application code.
 -- ----------------------------------------------------------------------------
 CREATE TABLE tiers (
-    tier_name           TEXT PRIMARY KEY,             -- 'GROWTH' | 'STABLE'
+    tier_name           TEXT PRIMARY KEY,             -- 'GROWTH' | 'STABLE' | 'HIGH_VOL'
     buy_trigger_pct     NUMERIC(6,4) NOT NULL,         -- e.g. -0.10 for -10% from anchor
     harvest_target_pct  NUMERIC(6,4) NOT NULL,         -- e.g.  0.15 for +15% gain
     stop_loss_pct       NUMERIC(6,4) NOT NULL,         -- e.g. -0.15 from cost basis
@@ -19,7 +19,8 @@ CREATE TABLE tiers (
 
 INSERT INTO tiers (tier_name, buy_trigger_pct, harvest_target_pct, stop_loss_pct, description) VALUES
     ('GROWTH', -0.10, 0.15, -0.15, 'High-volatility names (AMD, NVDA, ...)'),
-    ('STABLE', -0.05, 0.10, -0.08, 'Blue-chip / income names (MSFT, O, TGT, ...)');
+    ('STABLE', -0.05, 0.10, -0.08, 'Blue-chip / income names (MSFT, O, TGT, ...)'),
+    ('HIGH_VOL', -0.27, 0.40, -0.40, 'Volatility-calibrated for names whose realized vol dwarfs GROWTH''s (AAOI, RKLB, LITE, ...)');
 
 -- ----------------------------------------------------------------------------
 -- 2. HOLDINGS — current live position state, one row per ticker.
