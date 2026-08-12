@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app import models, schemas
 from app.config import (
+    RECENT_MOVE_LOOKBACK_DAYS,
     SECTOR_ETFS,
     SECTOR_RS_BENCHMARK,
     SECTOR_RS_LOOKBACK_DAYS,
@@ -20,6 +21,7 @@ from app.config import (
 )
 from app.engine.data_fetcher import get_close_series, get_live_quote
 from app.engine.decision_engine import Signal, evaluate_holding
+from app.engine.extended_trend import compute_extended_trend
 from app.engine.sector_strength import SectorRank, rank_sectors
 
 logger = logging.getLogger("the_kun_algorithm.signals")
@@ -73,6 +75,26 @@ def _apply_live_quote(signal: Signal, ticker: str) -> None:
         (quote.price - signal.anchor_price) / signal.anchor_price if signal.anchor_price > 0 else 0.0
     )
     signal.is_after_hours = quote.is_after_hours
+
+
+def _apply_extended_trend(signal: Signal, close_series) -> None:
+    """
+    Fills in the 50/200-day picture + recent-move magnitude — call after
+    _apply_live_quote so `signal.live_price` already reflects the freshest
+    quote. Never touches ema8/ema21/trend/signal; see engine/extended_trend.
+    """
+    try:
+        trend = compute_extended_trend(close_series, signal.live_price, RECENT_MOVE_LOOKBACK_DAYS)
+    except Exception as exc:
+        logger.warning("Extended trend unavailable for %s: %s", signal.ticker, exc)
+        return
+
+    signal.sma50 = trend.sma50
+    signal.sma200 = trend.sma200
+    signal.pct_vs_50d = trend.pct_vs_50d
+    signal.pct_vs_200d = trend.pct_vs_200d
+    signal.cross = trend.cross
+    signal.recent_move_pct = trend.recent_move_pct
 
 
 @router.get("/sector-strength", response_model=list[schemas.SectorRankOut])
@@ -153,6 +175,7 @@ def run_decision_engine(
 
         # Only the API response gets the fresher price — see _apply_live_quote.
         _apply_live_quote(signal, holding.ticker)
+        _apply_extended_trend(signal, close_series)
 
         # Keep the cached high-water mark on the holding row current so the
         # ledger UI can show it without recomputing on every render.
@@ -191,6 +214,7 @@ def run_decision_engine_for_ticker(ticker: str, db: Session = Depends(get_db)):
         close_prices=close_series,
     )
     _apply_live_quote(signal, holding.ticker)
+    _apply_extended_trend(signal, close_series)
 
     sector_label = TICKER_SECTOR_MAP.get(holding.ticker)
     sector_rank_info = None

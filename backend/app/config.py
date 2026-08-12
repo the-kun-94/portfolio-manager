@@ -138,6 +138,12 @@ STYLE_TILT_NEUTRAL_BAND = 0.01    # spread within +/-1% reads as NEUTRAL rather 
 SECTOR_RS_BENCHMARK = "SPY"
 SECTOR_RS_LOOKBACK_DAYS = 63   # ~3 trading months
 
+# ---------------------------------------------------------------------------
+# Extended Trend — 50/200-day context + recent-move magnitude. Informational
+# only, same as Sector Relative Strength above; see engine/extended_trend.py.
+# ---------------------------------------------------------------------------
+RECENT_MOVE_LOOKBACK_DAYS = 10   # ~2 trading weeks
+
 SECTOR_ETFS: dict[str, str] = {
     "XLK": "Technology",
     "XLF": "Financials",

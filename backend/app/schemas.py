@@ -81,6 +81,16 @@ class SignalOut(BaseModel):
     # regular-session close — see data_fetcher.get_live_quote.
     is_after_hours: bool = False
 
+    # Extended Trend — 50/200-day context + recent-move magnitude.
+    # Informational only, never affects `signal`. sma200/pct_vs_200d/cross
+    # are None for tickers with under 200 daily bars of history.
+    sma50: Optional[float] = None
+    sma200: Optional[float] = None
+    pct_vs_50d: Optional[float] = None
+    pct_vs_200d: Optional[float] = None
+    cross: Optional[Literal["GOLDEN", "DEATH"]] = None
+    recent_move_pct: Optional[float] = None
+
 
 # ---------------------------------------------------------------------------
 # Sector Relative Strength leaderboard

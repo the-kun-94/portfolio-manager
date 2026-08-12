@@ -64,6 +64,14 @@ class Signal:
     reason: str
     is_after_hours: bool = False   # overwritten by the router with a live quote; see routers/signals.py
 
+    # Extended Trend — populated by the router; see engine/extended_trend.py.
+    sma50: Optional[float] = None
+    sma200: Optional[float] = None
+    pct_vs_50d: Optional[float] = None
+    pct_vs_200d: Optional[float] = None
+    cross: Optional[str] = None
+    recent_move_pct: Optional[float] = None
+
 
 def evaluate_holding(
     ticker: str,

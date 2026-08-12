@@ -25,6 +25,7 @@ export default function DualGateLedger({ signals }: Props) {
               <th>Cost / Peak</th>
               <th>ROI</th>
               <th>8/21 EMA Trend</th>
+              <th>Extended Trend</th>
               <th>Sector</th>
               <th>Signal</th>
             </tr>
@@ -53,6 +54,27 @@ export default function DualGateLedger({ signals }: Props) {
                     {s.ema8.toFixed(2)} / {s.ema21.toFixed(2)}
                   </span>
                 </td>
+                <td data-label="Extended Trend">
+                  {s.recent_move_pct !== null ? (
+                    <>
+                      <span className={s.recent_move_pct >= 0 ? "accent-green" : "accent-red"}>
+                        {formatPct(s.recent_move_pct)} (10d)
+                      </span>
+                      <span className="cell-sub">
+                        {s.cross ? (
+                          <>
+                            {s.cross === "GOLDEN" ? "Golden cross" : "Death cross"}
+                            {s.pct_vs_200d !== null ? `, ${formatPct(s.pct_vs_200d)} vs 200d` : ""}
+                          </>
+                        ) : (
+                          "< 200d history"
+                        )}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="cell-sub">—</span>
+                  )}
+                </td>
                 <td data-label="Sector">
                   {s.sector_label ? (
                     <>
@@ -72,7 +94,7 @@ export default function DualGateLedger({ signals }: Props) {
             ))}
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="empty-state">
+                <td colSpan={9} className="empty-state">
                   No active holdings yet — log a trade below to get started.
                 </td>
               </tr>
