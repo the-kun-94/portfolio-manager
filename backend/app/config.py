@@ -144,6 +144,11 @@ SECTOR_RS_LOOKBACK_DAYS = 63   # ~3 trading months
 # ---------------------------------------------------------------------------
 RECENT_MOVE_LOOKBACK_DAYS = 10   # ~2 trading weeks
 
+# A held sector dropping out of the top N (by trailing Sector RS) is what
+# GET /api/sector-strength/alerts flags — informational, not a gate; meant
+# to be polled by an external scheduled check, not the dashboard itself.
+SECTOR_ALERT_TOP_N = 3
+
 SECTOR_ETFS: dict[str, str] = {
     "XLK": "Technology",
     "XLF": "Financials",

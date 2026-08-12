@@ -102,6 +102,17 @@ class SectorRankOut(BaseModel):
     rank: int
 
 
+class SectorAlertOut(BaseModel):
+    sector_label: str
+    current_rank: int
+    tickers_held: list[str]
+
+
+class SectorAlertsResponse(BaseModel):
+    alerts: list[SectorAlertOut]
+    threshold: int   # the top-N cutoff used for this check
+
+
 # ---------------------------------------------------------------------------
 # Command Header
 # ---------------------------------------------------------------------------

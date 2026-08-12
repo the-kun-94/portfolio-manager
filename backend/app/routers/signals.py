@@ -14,6 +14,7 @@ from app.database import get_db
 from app import models, schemas
 from app.config import (
     RECENT_MOVE_LOOKBACK_DAYS,
+    SECTOR_ALERT_TOP_N,
     SECTOR_ETFS,
     SECTOR_RS_BENCHMARK,
     SECTOR_RS_LOOKBACK_DAYS,
@@ -116,6 +117,35 @@ def sector_strength(db: Session = Depends(get_db)):
     db.commit()
 
     return [schemas.SectorRankOut(**r.__dict__) for r in ranks]
+
+
+@router.get("/sector-strength/alerts", response_model=schemas.SectorAlertsResponse)
+def sector_strength_alerts(top_n: int = SECTOR_ALERT_TOP_N, db: Session = Depends(get_db)):
+    """
+    Flags any sector you currently hold that has fallen out of the top
+    `top_n` (by trailing Sector RS vs. SPY) — meant to be polled by an
+    external scheduled check (see the /schedule setup), not the dashboard
+    itself. Read-only, no side effects; same informational-only status as
+    /api/sector-strength.
+    """
+    ranks = compute_sector_ranks()
+    rank_by_label = {r.sector_label: r.rank for r in ranks}
+
+    holdings = db.query(models.Holding).filter(models.Holding.is_active.is_(True)).all()
+    tickers_by_sector: dict[str, list[str]] = {}
+    for h in holdings:
+        sector = TICKER_SECTOR_MAP.get(h.ticker)
+        if sector:
+            tickers_by_sector.setdefault(sector, []).append(h.ticker)
+
+    alerts = [
+        schemas.SectorAlertOut(sector_label=sector, current_rank=rank_by_label[sector], tickers_held=sorted(tickers))
+        for sector, tickers in tickers_by_sector.items()
+        if sector in rank_by_label and rank_by_label[sector] > top_n
+    ]
+    alerts.sort(key=lambda a: a.current_rank)
+
+    return schemas.SectorAlertsResponse(alerts=alerts, threshold=top_n)
 
 
 @router.get("/decision-engine", response_model=list[schemas.SignalOut])
