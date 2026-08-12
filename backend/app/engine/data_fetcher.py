@@ -89,16 +89,29 @@ def get_live_quote(ticker: str, force_refresh: bool = False) -> LiveQuote:
         info = {}
 
     market_state = info.get("marketState", "UNKNOWN")
-    regular_price = info.get("regularMarketPrice")
-    post_price = info.get("postMarketPrice")
-    pre_price = info.get("preMarketPrice")
 
-    if market_state in ("POST", "POSTPOST") and post_price:
-        price, is_ah = float(post_price), True
-    elif market_state == "PRE" and pre_price:
-        price, is_ah = float(pre_price), True
-    elif regular_price:
-        price, is_ah = float(regular_price), False
+    # Pick whichever price has the freshest timestamp, rather than matching
+    # marketState strings — Yahoo reports more states than just PRE/REGULAR/
+    # POST (e.g. PREPRE, the overnight gap after post-market ends and before
+    # pre-market begins), and matching by name means silently falling back
+    # to a stale regular-session price whenever a state isn't in the list.
+    # postMarketPrice/postMarketTime stay populated with the prior session's
+    # last print through that whole gap, so timestamp comparison picks it up
+    # correctly regardless of what marketState says.
+    candidates: list[tuple[str, float, int]] = []
+    for session, price_key, time_key in (
+        ("regular", "regularMarketPrice", "regularMarketTime"),
+        ("post", "postMarketPrice", "postMarketTime"),
+        ("pre", "preMarketPrice", "preMarketTime"),
+    ):
+        price_val = info.get(price_key)
+        time_val = info.get(time_key)
+        if price_val is not None and time_val is not None:
+            candidates.append((session, float(price_val), int(time_val)))
+
+    if candidates:
+        session, price, _ts = max(candidates, key=lambda c: c[2])
+        is_ah = session != "regular"
     else:
         # Quote snapshot had nothing usable — fall back to the last daily close.
         price, is_ah = float(get_close_series(ticker).iloc[-1]), False
