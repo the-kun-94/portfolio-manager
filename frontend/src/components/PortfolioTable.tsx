@@ -55,7 +55,42 @@ export default function PortfolioTable({ signals }: Props) {
           <span className="portfolio-total-value">{formatMoney(totalEquity)}</span>
         </div>
       </div>
-      <div className="ledger-table-wrap">
+      <div className="ledger-tiles">
+        {rows.map((r) => (
+          <details key={r.ticker} className="ledger-tile">
+            <summary className="ledger-tile-summary">
+              <span className="ledger-tile-ticker">{r.ticker}</span>
+              <span className="ledger-tile-price">
+                {formatMoney(r.live_price)}
+                {r.is_after_hours ? <span className="ah-badge">AH</span> : null}
+              </span>
+              <span className={`ledger-tile-metric ${r.totalReturn >= 0 ? "accent-green" : "accent-red"}`}>
+                {r.totalReturn >= 0 ? "▲" : "▼"} {formatMoney(Math.abs(r.totalReturn))}
+              </span>
+              <span className="ledger-tile-metric">{formatMoney(r.equity)}</span>
+            </summary>
+            <div className="ledger-tile-detail">
+              <div className="ledger-tile-detail-row">
+                <span className="ledger-tile-detail-label">Name</span>
+                <span className="ledger-tile-detail-value">{TICKER_NAMES[r.ticker] ?? r.ticker}</span>
+              </div>
+              <div className="ledger-tile-detail-row">
+                <span className="ledger-tile-detail-label">Shares</span>
+                <span className="ledger-tile-detail-value">
+                  {r.shares.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                </span>
+              </div>
+              <div className="ledger-tile-detail-row">
+                <span className="ledger-tile-detail-label">Average cost</span>
+                <span className="ledger-tile-detail-value">{formatMoney(r.wac)}</span>
+              </div>
+            </div>
+          </details>
+        ))}
+        {rows.length === 0 ? <p className="empty-state">No active holdings yet — log a trade below to get started.</p> : null}
+      </div>
+
+      <div className="ledger-table-wrap has-tile-view">
         <table className="ledger-table">
           <thead>
             <tr>
