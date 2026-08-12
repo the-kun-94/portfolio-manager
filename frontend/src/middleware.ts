@@ -16,8 +16,8 @@ export async function middleware(req: NextRequest) {
   }
 
   const token = req.cookies.get("session")?.value;
-  const valid = await verifySessionToken(SESSION_SECRET, token);
-  if (!valid) {
+  const role = await verifySessionToken(SESSION_SECRET, token);
+  if (!role) {
     const loginUrl = new URL("/login", req.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);

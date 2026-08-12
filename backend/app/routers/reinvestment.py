@@ -13,6 +13,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.auth import require_write_access
 from app.database import get_db
 from app import models, schemas, crud
 from app.config import (
@@ -99,7 +100,10 @@ def recommendation(db: Session = Depends(get_db)):
     )
 
 
-@router.post("/park", response_model=schemas.TransactionOut, status_code=201)
+@router.post(
+    "/park", response_model=schemas.TransactionOut, status_code=201,
+    dependencies=[Depends(require_write_access)],
+)
 def park_cash(body: schemas.ParkCashRequest, db: Session = Depends(get_db)):
     ticker = (
         body.ticker.upper()
@@ -141,7 +145,10 @@ def park_cash(body: schemas.ParkCashRequest, db: Session = Depends(get_db)):
     return crud.record_trade(db, trade, buy_entry_type="PARK_ETF")
 
 
-@router.post("/unpark", response_model=schemas.TransactionOut, status_code=201)
+@router.post(
+    "/unpark", response_model=schemas.TransactionOut, status_code=201,
+    dependencies=[Depends(require_write_access)],
+)
 def unpark_cash(body: schemas.UnparkRequest, db: Session = Depends(get_db)):
     ticker = body.ticker.upper()
     if ticker not in FOUNDATION_ETFS:
