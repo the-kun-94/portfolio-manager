@@ -1,7 +1,11 @@
 import type { CashSummary } from "../lib/types";
 
 function formatCurrency(value: number): string {
-  return value.toLocaleString("en-US", {
+  // Floating-point cash-ledger arithmetic can land on a tiny negative
+  // epsilon instead of exactly 0 (e.g. after a park/unpark round-trip) —
+  // clamp anything under half a cent so it doesn't render as "-$0".
+  const clamped = Math.abs(value) < 0.005 ? 0 : value;
+  return clamped.toLocaleString("en-US", {
     style: "currency",
     currency: "USD",
     maximumFractionDigits: 0,
@@ -14,15 +18,17 @@ interface Props {
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
+  readOnly?: boolean;
 }
 
-export default function CommandHeader({ cash, lastUpdated, loading, error, onRefresh }: Props) {
+export default function CommandHeader({ cash, lastUpdated, loading, error, onRefresh, readOnly = false }: Props) {
   return (
     <header className="command-header">
       <div className="brand">
-        <span className="brand-mark">EMOTIONLESS EXECUTIONER</span>
+        <span className="brand-mark">THE KUN ALGORITHM</span>
         <span className={`status-dot ${error ? "status-error" : "status-ok"}`} />
         <span className="status-text">{error ? "ENGINE UNREACHABLE" : "LIVE"}</span>
+        {readOnly ? <span className="status-text accent-red">READ-ONLY</span> : null}
       </div>
 
       <div className="liquidity-grid">

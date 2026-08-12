@@ -1,5 +1,5 @@
 """
-Central configuration for the Emotionless Executioner.
+Central configuration for The Kun Algorithm.
 
 Every threshold the strategy depends on lives here — not scattered through
 the engine — so the rulebook can be audited (and tuned) in one place without
@@ -14,8 +14,8 @@ from dataclasses import dataclass
 # ---------------------------------------------------------------------------
 # Defaults to a local SQLite file for zero-config dev. Point DATABASE_URL at
 # Postgres in production, e.g.:
-#   postgresql+psycopg2://user:pass@localhost:5432/emotionless_executioner
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./emotionless_executioner.db")
+#   postgresql+psycopg2://user:pass@localhost:5432/the_kun_algorithm
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./the_kun_algorithm.db")
 # Render/Heroku-style Postgres URLs are handed out as "postgres://" — SQLAlchemy
 # 2.x + psycopg2 require the "postgresql://" scheme, so normalize it here once
 # rather than making every deploy target remember to do it.
@@ -40,6 +40,13 @@ CORS_ORIGINS = [
 # check; set it in production. See app/auth.py.
 API_KEY = os.getenv("API_KEY", "")
 
+# Optional second key that authenticates but is only ever granted read
+# access (see app/auth.py's require_write_access) — issue this to a
+# viewer you want to see the dashboard without being able to execute
+# trades, park/unpark cash, or post deposits/withdrawals. Leave unset to
+# not offer read-only access at all.
+API_KEY_READONLY = os.getenv("API_KEY_READONLY", "")
+
 
 # ---------------------------------------------------------------------------
 # Tier rules — mirrors the `tiers` table (DB is the source of truth at
@@ -55,6 +62,14 @@ class TierConfig:
 TIER_CONFIG: dict[str, TierConfig] = {
     "GROWTH": TierConfig(buy_trigger_pct=-0.10, harvest_target_pct=0.15, stop_loss_pct=-0.15),
     "STABLE": TierConfig(buy_trigger_pct=-0.05, harvest_target_pct=0.10, stop_loss_pct=-0.08),
+    # Volatility-calibrated (not picked by feel): threshold = k * trailing
+    # ~1-month realized vol, with k derived from GROWTH's own implied risk
+    # tolerance (k_buy≈0.83, k_stop≈1.24, averaged across GROWTH names that
+    # actually fit its thresholds well). AAOI/RKLB/LITE average ~32% monthly
+    # vol vs. ~7-21% for the rest of GROWTH — same dollar-move thresholds
+    # were firing on normal noise for these three. Revisit ~2026-09-11 to
+    # see if k needs adjusting once there's a month of live behavior to look at.
+    "HIGH_VOL": TierConfig(buy_trigger_pct=-0.27, harvest_target_pct=0.40, stop_loss_pct=-0.40),
 }
 
 
@@ -95,6 +110,32 @@ QUOTE_CACHE_TTL_SECONDS = 60  # avoid hammering yfinance on repeated dashboard p
 # Reinvestment Engine ("The Siphon")
 # ---------------------------------------------------------------------------
 FOUNDATION_ETFS = ["VOO", "SMH"]   # parking lot when no active BUY signal wins the cash
+DEFAULT_FOUNDATION_ETF = "VOO"     # broad-market fallback when no sector proxy qualifies
+FOUNDATION_ETF_TIER = "STABLE"     # tier assigned to new parking-lot positions opened by the Siphon
+
+# Foundation ETFs that track a single sector get first claim on parked cash
+# when that sector is both the #1-ranked SPDR sector (by trailing RS vs. SPY)
+# and still outperforming the benchmark outright. Anything not listed here
+# (e.g. VOO) is sector-agnostic and only used as the DEFAULT_FOUNDATION_ETF
+# fallback.
+FOUNDATION_ETF_SECTOR_PROXY: dict[str, str] = {
+    "SMH": "Technology",
+}
+
+# ---------------------------------------------------------------------------
+# Style Rotation tilt — a leading indicator surfaced next to the
+# Reinvestment Engine's recommendation, never a trigger on its own. The
+# sector-RS rank above is a confirming signal computed over a 63-day
+# window; by the time a sector clears that bar the rotation into it is
+# often already underway. Growth-vs-value spread is a faster-moving proxy
+# for the same rotation, so a shorter window here can flag "this pick may
+# be running out of room" (or "there may be more room than the trailing
+# number shows") before the sector-RS number catches up.
+# ---------------------------------------------------------------------------
+STYLE_GROWTH_ETF = "VUG"
+STYLE_VALUE_ETF = "VTV"
+STYLE_TILT_LOOKBACK_DAYS = 21     # ~1 trading month — shorter than SECTOR_RS_LOOKBACK_DAYS on purpose
+STYLE_TILT_NEUTRAL_BAND = 0.01    # spread within +/-1% reads as NEUTRAL rather than a lean
 
 # ---------------------------------------------------------------------------
 # Sector Relative Strength — informational context only, never a Dual-Gate
@@ -104,6 +145,17 @@ FOUNDATION_ETFS = ["VOO", "SMH"]   # parking lot when no active BUY signal wins 
 # ---------------------------------------------------------------------------
 SECTOR_RS_BENCHMARK = "SPY"
 SECTOR_RS_LOOKBACK_DAYS = 63   # ~3 trading months
+
+# ---------------------------------------------------------------------------
+# Extended Trend — 50/200-day context + recent-move magnitude. Informational
+# only, same as Sector Relative Strength above; see engine/extended_trend.py.
+# ---------------------------------------------------------------------------
+RECENT_MOVE_LOOKBACK_DAYS = 10   # ~2 trading weeks
+
+# A held sector dropping out of the top N (by trailing Sector RS) is what
+# GET /api/sector-strength/alerts flags — informational, not a gate; meant
+# to be polled by an external scheduled check, not the dashboard itself.
+SECTOR_ALERT_TOP_N = 3
 
 SECTOR_ETFS: dict[str, str] = {
     "XLK": "Technology",
@@ -131,4 +183,11 @@ TICKER_SECTOR_MAP: dict[str, str] = {
     "TGT": "Consumer Discretionary",
     "SONY": "Consumer Discretionary",
     "O": "Real Estate",
+    "GOOG": "Communication Services",
+    "ORCL": "Technology",
+    "NOW": "Technology",
+    "TEL": "Industrials",
+    "LITE": "Technology",
+    "RKLB": "Industrials",
+    "AAOI": "Technology",
 }

@@ -4,11 +4,12 @@ import type { TradeCreate, TierName } from "../lib/types";
 
 interface Props {
   onTraded: () => void;
+  readOnly?: boolean;
 }
 
-const TIERS: TierName[] = ["GROWTH", "STABLE"];
+const TIERS: TierName[] = ["GROWTH", "STABLE", "HIGH_VOL"];
 
-export default function TradeForm({ onTraded }: Props) {
+export default function TradeForm({ onTraded, readOnly = false }: Props) {
   const [ticker, setTicker] = useState("");
   const [action, setAction] = useState<"BUY" | "SELL">("BUY");
   const [shares, setShares] = useState("");
@@ -59,6 +60,7 @@ export default function TradeForm({ onTraded }: Props) {
   return (
     <section className="trade-form">
       <h2 className="panel-title">EXECUTE TRADE</h2>
+      {readOnly ? <p className="panel-subtitle">Read-only session — trade execution disabled.</p> : null}
       <form onSubmit={handleSubmit}>
         <div className="form-row">
           <label>
@@ -125,8 +127,12 @@ export default function TradeForm({ onTraded }: Props) {
         {error ? <p className="form-error">{error}</p> : null}
         {successMsg ? <p className="form-success">{successMsg}</p> : null}
 
-        <button type="submit" className={`submit-btn submit-btn-${action.toLowerCase()}`} disabled={submitting}>
-          {submitting ? "EXECUTING…" : `EXECUTE ${action}`}
+        <button
+          type="submit"
+          className={`submit-btn submit-btn-${action.toLowerCase()}`}
+          disabled={submitting || readOnly}
+        >
+          {readOnly ? "READ-ONLY" : submitting ? "EXECUTING…" : `EXECUTE ${action}`}
         </button>
       </form>
     </section>

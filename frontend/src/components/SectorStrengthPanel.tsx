@@ -30,10 +30,10 @@ export default function SectorStrengthPanel({ ranks }: Props) {
           <tbody>
             {ranks.map((r) => (
               <tr key={r.etf_ticker}>
-                <td>#{r.rank}</td>
-                <td>{r.sector_label}</td>
-                <td className="cell-ticker">{r.etf_ticker}</td>
-                <td className={r.relative_strength >= 0 ? "accent-green" : "accent-red"}>
+                <td data-label="Rank">#{r.rank}</td>
+                <td data-label="Sector">{r.sector_label}</td>
+                <td className="cell-ticker" data-label="ETF">{r.etf_ticker}</td>
+                <td data-label="RS vs. SPY" className={r.relative_strength >= 0 ? "accent-green" : "accent-red"}>
                   {formatPct(r.relative_strength)}
                 </td>
               </tr>

@@ -1,5 +1,5 @@
 """
-The Decision Engine — the mechanical brain of the Emotionless Executioner.
+The Decision Engine — the mechanical brain of The Kun Algorithm.
 
 Pure function core (`evaluate_holding`) takes a position + its price history
 and returns exactly one Signal. No I/O, no side effects, no randomness —
@@ -62,6 +62,15 @@ class Signal:
     suggested_sell_pct: Optional[float]
     label: str
     reason: str
+    is_after_hours: bool = False   # overwritten by the router with a live quote; see routers/signals.py
+
+    # Extended Trend — populated by the router; see engine/extended_trend.py.
+    sma50: Optional[float] = None
+    sma200: Optional[float] = None
+    pct_vs_50d: Optional[float] = None
+    pct_vs_200d: Optional[float] = None
+    cross: Optional[str] = None
+    recent_move_pct: Optional[float] = None
 
 
 def evaluate_holding(

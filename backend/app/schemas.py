@@ -15,7 +15,7 @@ class TradeCreate(BaseModel):
     price: float = Field(gt=0)
     signal_type: Optional[str] = "MANUAL"
     notes: Optional[str] = None
-    tier_name: Optional[Literal["GROWTH", "STABLE"]] = None  # required only for a brand-new ticker
+    tier_name: Optional[Literal["GROWTH", "STABLE", "HIGH_VOL"]] = None  # required only for a brand-new ticker
 
 
 class TransactionOut(BaseModel):
@@ -77,6 +77,20 @@ class SignalOut(BaseModel):
     sector_rank: Optional[int] = None
     sector_relative_strength: Optional[float] = None
 
+    # True when live_price is a pre/post-market quote rather than the
+    # regular-session close — see data_fetcher.get_live_quote.
+    is_after_hours: bool = False
+
+    # Extended Trend — 50/200-day context + recent-move magnitude.
+    # Informational only, never affects `signal`. sma200/pct_vs_200d/cross
+    # are None for tickers with under 200 daily bars of history.
+    sma50: Optional[float] = None
+    sma200: Optional[float] = None
+    pct_vs_50d: Optional[float] = None
+    pct_vs_200d: Optional[float] = None
+    cross: Optional[Literal["GOLDEN", "DEATH"]] = None
+    recent_move_pct: Optional[float] = None
+
 
 # ---------------------------------------------------------------------------
 # Prospect Screener — evaluates a ticker you don't hold yet
@@ -105,6 +119,17 @@ class SectorRankOut(BaseModel):
     rank: int
 
 
+class SectorAlertOut(BaseModel):
+    sector_label: str
+    current_rank: int
+    tickers_held: list[str]
+
+
+class SectorAlertsResponse(BaseModel):
+    alerts: list[SectorAlertOut]
+    threshold: int   # the top-N cutoff used for this check
+
+
 # ---------------------------------------------------------------------------
 # Command Header
 # ---------------------------------------------------------------------------
@@ -112,3 +137,30 @@ class CashSummary(BaseModel):
     cash_balance: float
     active_equity_value: float
     total_liquidity: float
+
+
+# ---------------------------------------------------------------------------
+# Reinvestment Engine ("The Siphon")
+# ---------------------------------------------------------------------------
+class ReinvestmentRecommendationOut(BaseModel):
+    cash_balance: float
+    has_actionable_buy: bool               # True if a real BUY_DIP already wants this cash
+    actionable_buy_tickers: list[str]
+    recommended_etf: str
+    reason: str
+
+    # Growth/value style tilt — a leading indicator, informational only,
+    # never changes `recommended_etf`. None when price data is unavailable.
+    style_tilt: Optional[Literal["GROWTH_LEADING", "VALUE_LEADING", "NEUTRAL"]] = None
+    style_tilt_spread: Optional[float] = None
+    style_tilt_note: Optional[str] = None  # set only when the tilt is worth a second look
+
+
+class ParkCashRequest(BaseModel):
+    amount: Optional[float] = Field(default=None, gt=0)   # omit to park the full cash balance
+    ticker: Optional[str] = None                            # omit to use the recommended ETF
+
+
+class UnparkRequest(BaseModel):
+    ticker: str
+    shares: Optional[float] = Field(default=None, gt=0)   # omit to sell the entire parked position

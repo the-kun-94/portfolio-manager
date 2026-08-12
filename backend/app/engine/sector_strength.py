@@ -22,7 +22,10 @@ class SectorRank:
     rank: int                   # 1 = strongest
 
 
-def _period_return(close_prices: pd.Series, lookback_days: int) -> float:
+def period_return(close_prices: pd.Series, lookback_days: int) -> float:
+    """Simple return over the trailing `lookback_days` bars. Shared with
+    engine/style_rotation.py, which computes the same kind of return over a
+    different (shorter) window and a different pair of tickers."""
     window = close_prices.tail(lookback_days + 1)
     if len(window) < 2:
         raise ValueError("Not enough price history to compute a period return.")
@@ -41,12 +44,12 @@ def rank_sectors(
     fetched successfully — the caller is responsible for skipping failures,
     same pattern the Decision Engine router uses for individual holdings.
     """
-    benchmark_return = _period_return(benchmark_close, lookback_days)
+    benchmark_return = period_return(benchmark_close, lookback_days)
 
     scored: list[tuple[str, float]] = []
     for etf_ticker, close_series in sector_close_series.items():
         try:
-            etf_return = _period_return(close_series, lookback_days)
+            etf_return = period_return(close_series, lookback_days)
         except ValueError:
             continue
         scored.append((etf_ticker, etf_return - benchmark_return))

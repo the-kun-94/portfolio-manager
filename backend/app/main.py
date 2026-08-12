@@ -1,5 +1,5 @@
 """
-Emotionless Executioner — FastAPI entrypoint.
+The Kun Algorithm — FastAPI entrypoint.
 
 Run locally:
     cd backend
@@ -20,14 +20,14 @@ evolve without a table wipe.
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.auth import verify_api_key
+from app.auth import get_access_level
 from app.database import engine, SessionLocal, Base
 from app import models
 from app.config import TIER_CONFIG, CORS_ORIGINS
-from app.routers import signals, trades, portfolio, cash, screener
+from app.routers import signals, trades, portfolio, cash, screener, reinvestment
 
 app = FastAPI(
-    title="Emotionless Executioner",
+    title="The Kun Algorithm",
     description="Strictly mechanical, rule-based algorithmic trading engine.",
     version="0.1.0",
 )
@@ -40,12 +40,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-_auth = [Depends(verify_api_key)]
+_auth = [Depends(get_access_level)]
 app.include_router(signals.router, dependencies=_auth)
 app.include_router(trades.router, dependencies=_auth)
 app.include_router(portfolio.router, dependencies=_auth)
 app.include_router(cash.router, dependencies=_auth)
 app.include_router(screener.router, dependencies=_auth)
+app.include_router(reinvestment.router, dependencies=_auth)
 
 
 @app.on_event("startup")
@@ -69,4 +70,4 @@ def bootstrap_db() -> None:
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "system": "Emotionless Executioner"}
+    return {"status": "ok", "system": "The Kun Algorithm"}

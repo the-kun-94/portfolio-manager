@@ -17,6 +17,13 @@ const TICKER_NAMES: Record<string, string> = {
   VOO: "Vanguard S&P 500 ETF",
   XLK: "Technology Select Sector SPDR Fund",
   O: "Realty Income",
+  GOOG: "Alphabet",
+  ORCL: "Oracle",
+  NOW: "ServiceNow",
+  TEL: "TE Connectivity",
+  LITE: "Lumentum",
+  RKLB: "Rocket Lab",
+  AAOI: "Applied Optoelectronics",
 };
 
 function formatMoney(value: number): string {
@@ -48,7 +55,42 @@ export default function PortfolioTable({ signals }: Props) {
           <span className="portfolio-total-value">{formatMoney(totalEquity)}</span>
         </div>
       </div>
-      <div className="ledger-table-wrap">
+      <div className="ledger-tiles">
+        {rows.map((r) => (
+          <details key={r.ticker} className="ledger-tile">
+            <summary className="ledger-tile-summary">
+              <span className="ledger-tile-ticker">{r.ticker}</span>
+              <span className="ledger-tile-price">
+                {formatMoney(r.live_price)}
+                {r.is_after_hours ? <span className="ah-badge">AH</span> : null}
+              </span>
+              <span className={`ledger-tile-metric ${r.totalReturn >= 0 ? "accent-green" : "accent-red"}`}>
+                {r.totalReturn >= 0 ? "▲" : "▼"} {formatMoney(Math.abs(r.totalReturn))}
+              </span>
+              <span className="ledger-tile-metric">{formatMoney(r.equity)}</span>
+            </summary>
+            <div className="ledger-tile-detail">
+              <div className="ledger-tile-detail-row">
+                <span className="ledger-tile-detail-label">Name</span>
+                <span className="ledger-tile-detail-value">{TICKER_NAMES[r.ticker] ?? r.ticker}</span>
+              </div>
+              <div className="ledger-tile-detail-row">
+                <span className="ledger-tile-detail-label">Shares</span>
+                <span className="ledger-tile-detail-value">
+                  {r.shares.toLocaleString(undefined, { maximumFractionDigits: 3 })}
+                </span>
+              </div>
+              <div className="ledger-tile-detail-row">
+                <span className="ledger-tile-detail-label">Average cost</span>
+                <span className="ledger-tile-detail-value">{formatMoney(r.wac)}</span>
+              </div>
+            </div>
+          </details>
+        ))}
+        {rows.length === 0 ? <p className="empty-state">No active holdings yet — log a trade below to get started.</p> : null}
+      </div>
+
+      <div className="ledger-table-wrap has-tile-view">
         <table className="ledger-table">
           <thead>
             <tr>
@@ -64,15 +106,18 @@ export default function PortfolioTable({ signals }: Props) {
           <tbody>
             {rows.map((r) => (
               <tr key={r.ticker}>
-                <td>{TICKER_NAMES[r.ticker] ?? r.ticker}</td>
-                <td className="cell-ticker">{r.ticker}</td>
-                <td>{r.shares.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
-                <td>{formatMoney(r.live_price)}</td>
-                <td>{formatMoney(r.wac)}</td>
-                <td className={r.totalReturn >= 0 ? "accent-green" : "accent-red"}>
+                <td data-label="Name">{TICKER_NAMES[r.ticker] ?? r.ticker}</td>
+                <td className="cell-ticker" data-label="Symbol">{r.ticker}</td>
+                <td data-label="Shares">{r.shares.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
+                <td data-label="Price">
+                  {formatMoney(r.live_price)}
+                  {r.is_after_hours ? <span className="ah-badge">AH</span> : null}
+                </td>
+                <td data-label="Average cost">{formatMoney(r.wac)}</td>
+                <td data-label="Total return" className={r.totalReturn >= 0 ? "accent-green" : "accent-red"}>
                   {r.totalReturn >= 0 ? "▲" : "▼"} {formatMoney(Math.abs(r.totalReturn))}
                 </td>
-                <td>{formatMoney(r.equity)}</td>
+                <td data-label="Equity">{formatMoney(r.equity)}</td>
               </tr>
             ))}
             {rows.length === 0 ? (

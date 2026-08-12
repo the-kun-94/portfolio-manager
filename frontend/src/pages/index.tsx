@@ -5,17 +5,22 @@ import ActionFeed from "../components/ActionFeed";
 import PortfolioTable from "../components/PortfolioTable";
 import DualGateLedger from "../components/DualGateLedger";
 import SectorStrengthPanel from "../components/SectorStrengthPanel";
+import SiphonPanel from "../components/SiphonPanel";
 import TradeForm from "../components/TradeForm";
 import TransactionHistory from "../components/TransactionHistory";
 import { useDashboardData } from "../lib/useDashboardData";
+import { useSessionRole } from "../lib/useSessionRole";
 
 const Home: NextPage = () => {
-  const { signals, cash, trades, sectorRanks, loading, error, lastUpdated, refresh } = useDashboardData();
+  const { signals, holdings, cash, trades, sectorRanks, reinvestment, loading, error, lastUpdated, refresh } =
+    useDashboardData();
+  const role = useSessionRole();
+  const readOnly = role === "read";
 
   return (
     <>
       <Head>
-        <title>Emotionless Executioner</title>
+        <title>The Kun Algorithm</title>
         <meta
           name="description"
           content="Strictly mechanical, rule-based algorithmic trading terminal."
@@ -29,14 +34,16 @@ const Home: NextPage = () => {
           loading={loading}
           error={error}
           onRefresh={refresh}
+          readOnly={readOnly}
         />
         <main className="terminal-main">
           <ActionFeed signals={signals} />
           <PortfolioTable signals={signals} />
           <DualGateLedger signals={signals} />
           <SectorStrengthPanel ranks={sectorRanks} />
+          <SiphonPanel reinvestment={reinvestment} holdings={holdings} onActed={refresh} readOnly={readOnly} />
           <div className="terminal-columns">
-            <TradeForm onTraded={refresh} />
+            <TradeForm onTraded={refresh} readOnly={readOnly} />
             <TransactionHistory trades={trades} />
           </div>
         </main>

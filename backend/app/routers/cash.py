@@ -3,20 +3,21 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from app.auth import require_write_access
 from app.database import get_db
 from app import models, crud
 
 router = APIRouter(prefix="/api/cash", tags=["cash"])
 
 
-@router.post("/deposit")
+@router.post("/deposit", dependencies=[Depends(require_write_access)])
 def deposit_cash(amount: float, notes: str = "", db: Session = Depends(get_db)):
     entry = crud._write_cash_entry(db, "DEPOSIT", abs(amount), None, None, notes)
     db.commit()
     return {"balance_after": float(entry.balance_after)}
 
 
-@router.post("/withdraw")
+@router.post("/withdraw", dependencies=[Depends(require_write_access)])
 def withdraw_cash(amount: float, notes: str = "", db: Session = Depends(get_db)):
     entry = crud._write_cash_entry(db, "WITHDRAWAL", -abs(amount), None, None, notes)
     db.commit()

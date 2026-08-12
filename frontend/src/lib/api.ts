@@ -5,15 +5,17 @@ import type {
   CashSummary,
   TradeCreate,
   SectorRankOut,
+  ReinvestmentRecommendationOut,
+  ParkCashRequest,
+  UnparkRequest,
 } from "./types";
 
-// Set in .env.local for dev, or as a Vercel Environment Variable for prod.
-// Falls back to a local backend so `npm run dev` works with zero config.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
-
-// Must match the backend's API_KEY (see app/auth.py) — required once
-// deployed publicly. Empty in local dev, where the backend doesn't enforce it.
-const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
+// Every request goes through our own same-origin proxy (/api/proxy/*)
+// instead of hitting the backend directly — the proxy attaches the
+// correct backend API key server-side based on the visitor's session
+// role, so the key itself never ships in the browser bundle. See
+// pages/api/proxy/[...path].ts.
+const API_BASE_URL = "/api/proxy";
 
 class ApiError extends Error {
   status: number;
@@ -31,12 +33,11 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        ...(API_KEY ? { "X-API-Key": API_KEY } : {}),
         ...options?.headers,
       },
     });
   } catch {
-    throw new ApiError(0, `Could not reach the Engine at ${API_BASE_URL}. Is it running?`);
+    throw new ApiError(0, "Could not reach the app. Check your connection.");
   }
 
   if (!res.ok) {
@@ -70,6 +71,21 @@ export const api = {
     request<TransactionOut>("/api/trades", {
       method: "POST",
       body: JSON.stringify(trade),
+    }),
+
+  reinvestmentRecommendation: () =>
+    request<ReinvestmentRecommendationOut>("/api/reinvestment/recommendation"),
+
+  parkCash: (body: ParkCashRequest) =>
+    request<TransactionOut>("/api/reinvestment/park", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
+
+  unparkCash: (body: UnparkRequest) =>
+    request<TransactionOut>("/api/reinvestment/unpark", {
+      method: "POST",
+      body: JSON.stringify(body),
     }),
 };
 

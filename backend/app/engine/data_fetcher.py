@@ -22,7 +22,21 @@ class _CacheEntry:
     data: pd.Series
 
 
+@dataclass
+class LiveQuote:
+    price: float
+    market_state: str        # Yahoo's own label: 'PRE', 'REGULAR', 'POST', 'POSTPOST', 'CLOSED', ...
+    is_after_hours: bool      # True when `price` is a pre/post-market quote, not the regular-session price
+
+
+@dataclass
+class _QuoteCacheEntry:
+    fetched_at: float
+    quote: "LiveQuote"
+
+
 _price_history_cache: dict[str, _CacheEntry] = {}
+_quote_cache: dict[str, _QuoteCacheEntry] = {}
 
 
 def get_close_series(ticker: str, force_refresh: bool = False) -> pd.Series:
@@ -51,7 +65,62 @@ def get_close_series(ticker: str, force_refresh: bool = False) -> pd.Series:
     return close_series
 
 
+def get_live_quote(ticker: str, force_refresh: bool = False) -> LiveQuote:
+    """
+    Current tradeable price, preferring a pre/post-market quote over the
+    regular-session close when the market is closed and Yahoo has one —
+    this is what makes prices move on the dashboard outside 9:30-4:00 ET.
+
+    Only the *displayed* price changes; EMA/high-water-mark math still runs
+    off get_close_series's daily bars untouched, so a thin, volatile
+    after-hours print never affects the actual BUY/SELL gate — see
+    routers/signals.py for how the two are recombined.
+
+    Cached same as get_close_series, to keep repeated dashboard polls cheap.
+    """
+    cached = _quote_cache.get(ticker)
+    now = time.time()
+    if not force_refresh and cached and (now - cached.fetched_at) < QUOTE_CACHE_TTL_SECONDS:
+        return cached.quote
+
+    try:
+        info = yf.Ticker(ticker).info
+    except Exception:
+        info = {}
+
+    market_state = info.get("marketState", "UNKNOWN")
+
+    # Pick whichever price has the freshest timestamp, rather than matching
+    # marketState strings — Yahoo reports more states than just PRE/REGULAR/
+    # POST (e.g. PREPRE, the overnight gap after post-market ends and before
+    # pre-market begins), and matching by name means silently falling back
+    # to a stale regular-session price whenever a state isn't in the list.
+    # postMarketPrice/postMarketTime stay populated with the prior session's
+    # last print through that whole gap, so timestamp comparison picks it up
+    # correctly regardless of what marketState says.
+    candidates: list[tuple[str, float, int]] = []
+    for session, price_key, time_key in (
+        ("regular", "regularMarketPrice", "regularMarketTime"),
+        ("post", "postMarketPrice", "postMarketTime"),
+        ("pre", "preMarketPrice", "preMarketTime"),
+    ):
+        price_val = info.get(price_key)
+        time_val = info.get(time_key)
+        if price_val is not None and time_val is not None:
+            candidates.append((session, float(price_val), int(time_val)))
+
+    if candidates:
+        session, price, _ts = max(candidates, key=lambda c: c[2])
+        is_ah = session != "regular"
+    else:
+        # Quote snapshot had nothing usable — fall back to the last daily close.
+        price, is_ah = float(get_close_series(ticker).iloc[-1]), False
+
+    quote = LiveQuote(price=price, market_state=market_state, is_after_hours=is_ah)
+    _quote_cache[ticker] = _QuoteCacheEntry(fetched_at=now, quote=quote)
+    return quote
+
+
 def get_live_price(ticker: str) -> float:
-    """Most recent available close — 'live' at daily granularity.
-    Swap the interval to '1h'/'5m' in config for intraday polling."""
-    return float(get_close_series(ticker).iloc[-1])
+    """Current tradeable price — see get_live_quote for the after-hours logic."""
+    return get_live_quote(ticker).price

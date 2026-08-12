@@ -43,12 +43,25 @@ def _write_cash_entry(
     return entry
 
 
-def record_trade(db: Session, trade: schemas.TradeCreate) -> models.Transaction:
+def record_trade(
+    db: Session,
+    trade: schemas.TradeCreate,
+    *,
+    buy_entry_type: str = "BUY_DEBIT",
+    sell_entry_type: str = "SALE_PROCEEDS",
+) -> models.Transaction:
     """
     Logs the trade, recalculates the position's Weighted Average Cost (or
     realized P&L on a sell), and posts the corresponding cash-ledger entry —
     all in one committed transaction so the ledger can never drift out of
     sync with the holdings table.
+
+    `buy_entry_type`/`sell_entry_type` let callers other than the manual
+    Trade Execution UI tag the cash-ledger side differently — e.g. the
+    Reinvestment Engine posts PARK_ETF/UNPARK_ETF instead of the default
+    BUY_DEBIT/SALE_PROCEEDS so the audit trail can tell a parking-lot move
+    apart from a Dual-Gate-driven trade. The holdings/WAC bookkeeping is
+    identical either way; a parked ETF is still just a position.
     """
     holding = db.query(models.Holding).filter(models.Holding.ticker == trade.ticker).one_or_none()
 
@@ -89,7 +102,7 @@ def record_trade(db: Session, trade: schemas.TradeCreate) -> models.Transaction:
         holding.wac = new_wac
         holding.is_active = True
         _write_cash_entry(
-            db, "BUY_DEBIT", -(trade.shares * trade.price), trade.ticker, txn.id,
+            db, buy_entry_type, -(trade.shares * trade.price), trade.ticker, txn.id,
             notes=f"BUY {trade.shares} {trade.ticker} @ {trade.price}",
         )
 
@@ -107,7 +120,7 @@ def record_trade(db: Session, trade: schemas.TradeCreate) -> models.Transaction:
             holding.wac = 0
             holding.is_active = False
         _write_cash_entry(
-            db, "SALE_PROCEEDS", trade.shares * trade.price, trade.ticker, txn.id,
+            db, sell_entry_type, trade.shares * trade.price, trade.ticker, txn.id,
             notes=f"SELL {trade.shares} {trade.ticker} @ {trade.price}",
         )
 

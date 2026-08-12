@@ -76,6 +76,14 @@ select {
   gap: 20px;
 }
 
+/* Grid items default to min-width: auto, which refuses to shrink below the
+   content's natural (unwrapped) width — without this override, a single
+   too-wide child (e.g. an unshrinkable form input) forces the whole grid,
+   and the page, to overflow horizontally instead of the child wrapping. */
+.terminal-columns > * {
+  min-width: 0;
+}
+
 @media (max-width: 800px) {
   .terminal-columns {
     grid-template-columns: 1fr;
@@ -438,6 +446,182 @@ select {
   margin-top: 2px;
 }
 
+.ah-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--amber);
+  border: 1px solid var(--amber-dim);
+  background: var(--amber-dim);
+  vertical-align: middle;
+}
+
+/* Below this width, wide multi-column tables become stacked cards instead
+   of scrolling horizontally — every .ledger-table td carries a data-label
+   attribute (set in JSX) that becomes its row label here. */
+@media (max-width: 700px) {
+  .ledger-table-wrap {
+    overflow-x: visible;
+  }
+
+  .ledger-table thead {
+    display: none;
+  }
+
+  .ledger-table,
+  .ledger-table tbody,
+  .ledger-table tr,
+  .ledger-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .ledger-table tr {
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .ledger-table tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .ledger-table td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    white-space: normal;
+    text-align: right;
+  }
+
+  .ledger-table tr td:last-child {
+    border-bottom: none;
+  }
+
+  .ledger-table td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    font-weight: 600;
+    text-align: left;
+    flex-shrink: 0;
+  }
+
+  .ledger-table td.empty-state {
+    display: block;
+    text-align: left;
+    padding: 12px;
+  }
+
+  .ledger-table td.empty-state::before {
+    content: none;
+  }
+
+  .ledger-table .cell-sub {
+    text-align: right;
+  }
+
+  /* Ledger and Portfolio use a tile grid instead of the stacked-card table
+     above — too many fields for a single-column list to stay scannable.
+     Sector Strength (only 4 columns) keeps the plain stacked-card fallback. */
+  .ledger-table-wrap.has-tile-view {
+    display: none;
+  }
+}
+
+.ledger-tiles {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .ledger-tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .ledger-tile {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--panel-bg-raised);
+    overflow: hidden;
+  }
+
+  .ledger-tile-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .ledger-tile-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .ledger-tile-summary::marker {
+    content: "";
+  }
+
+  .ledger-tile-ticker {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  .ledger-tile-price {
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  .ledger-tile-metric {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .ledger-tile[open] .ledger-tile-summary {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ledger-tile-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+    font-size: 11px;
+  }
+
+  .ledger-tile-detail-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  .ledger-tile-detail-label {
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .ledger-tile-detail-value {
+    text-align: right;
+  }
+}
+
 .signal-badge {
   display: inline-block;
   padding: 3px 8px;
@@ -502,6 +686,7 @@ select {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  min-width: 0;
 }
 
 .form-row label {
@@ -510,6 +695,7 @@ select {
   gap: 4px;
   font-size: 11px;
   color: var(--text-dim);
+  min-width: 0;
 }
 
 .form-row input,
@@ -520,6 +706,8 @@ select {
   padding: 8px 10px;
   font-family: var(--font-mono);
   font-size: 13px;
+  width: 100%;
+  min-width: 0;
 }
 
 .form-row input:focus,
@@ -583,7 +771,7 @@ select {
 
 .history-item {
   display: grid;
-  grid-template-columns: 44px 56px 1fr auto;
+  grid-template-columns: 44px 56px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;

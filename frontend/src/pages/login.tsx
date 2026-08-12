@@ -35,12 +35,12 @@ const Login: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Emotionless Executioner — Login</title>
+        <title>The Kun Algorithm — Login</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <div className="login-screen">
         <form className="login-form" onSubmit={handleSubmit}>
-          <div className="brand-mark login-brand">EMOTIONLESS EXECUTIONER</div>
+          <div className="brand-mark login-brand">THE KUN ALGORITHM</div>
           <label className="login-label">
             Password
             <input
