@@ -71,15 +71,18 @@ export default function PortfolioTable({ signals }: Props) {
           <tbody>
             {rows.map((r) => (
               <tr key={r.ticker}>
-                <td>{TICKER_NAMES[r.ticker] ?? r.ticker}</td>
-                <td className="cell-ticker">{r.ticker}</td>
-                <td>{r.shares.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
-                <td>{formatMoney(r.live_price)}</td>
-                <td>{formatMoney(r.wac)}</td>
-                <td className={r.totalReturn >= 0 ? "accent-green" : "accent-red"}>
+                <td data-label="Name">{TICKER_NAMES[r.ticker] ?? r.ticker}</td>
+                <td className="cell-ticker" data-label="Symbol">{r.ticker}</td>
+                <td data-label="Shares">{r.shares.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
+                <td data-label="Price">
+                  {formatMoney(r.live_price)}
+                  {r.is_after_hours ? <span className="ah-badge">AH</span> : null}
+                </td>
+                <td data-label="Average cost">{formatMoney(r.wac)}</td>
+                <td data-label="Total return" className={r.totalReturn >= 0 ? "accent-green" : "accent-red"}>
                   {r.totalReturn >= 0 ? "▲" : "▼"} {formatMoney(Math.abs(r.totalReturn))}
                 </td>
-                <td>{formatMoney(r.equity)}</td>
+                <td data-label="Equity">{formatMoney(r.equity)}</td>
               </tr>
             ))}
             {rows.length === 0 ? (

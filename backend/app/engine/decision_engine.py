@@ -62,6 +62,7 @@ class Signal:
     suggested_sell_pct: Optional[float]
     label: str
     reason: str
+    is_after_hours: bool = False   # overwritten by the router with a live quote; see routers/signals.py
 
 
 def evaluate_holding(

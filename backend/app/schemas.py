@@ -77,6 +77,10 @@ class SignalOut(BaseModel):
     sector_rank: Optional[int] = None
     sector_relative_strength: Optional[float] = None
 
+    # True when live_price is a pre/post-market quote rather than the
+    # regular-session close — see data_fetcher.get_live_quote.
+    is_after_hours: bool = False
+
 
 # ---------------------------------------------------------------------------
 # Sector Relative Strength leaderboard

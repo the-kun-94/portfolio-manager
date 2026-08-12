@@ -36,6 +36,10 @@ export interface SignalOut {
   sector_label: string | null;
   sector_rank: number | null;
   sector_relative_strength: number | null;
+
+  // True when live_price is a pre/post-market quote rather than the
+  // regular-session close.
+  is_after_hours: boolean;
 }
 
 export interface SectorRankOut {

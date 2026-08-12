@@ -18,8 +18,8 @@ from app.config import (
     SECTOR_RS_LOOKBACK_DAYS,
     TICKER_SECTOR_MAP,
 )
-from app.engine.data_fetcher import get_close_series
-from app.engine.decision_engine import evaluate_holding
+from app.engine.data_fetcher import get_close_series, get_live_quote
+from app.engine.decision_engine import Signal, evaluate_holding
 from app.engine.sector_strength import SectorRank, rank_sectors
 
 logger = logging.getLogger("the_kun_algorithm.signals")
@@ -50,6 +50,29 @@ def compute_sector_ranks() -> list[SectorRank]:
             logger.warning("Skipping sector ETF %s: %s", etf_ticker, exc)
 
     return rank_sectors(sector_close_series, SECTOR_ETFS, benchmark_close, SECTOR_RS_LOOKBACK_DAYS)
+
+
+def _apply_live_quote(signal: Signal, ticker: str) -> None:
+    """
+    Overrides the pure daily-close `live_price` (and the display fields
+    derived from it) with a fresher pre/post-market quote when the market's
+    closed and Yahoo has one. Deliberately leaves ema8/ema21/trend/
+    anchor_price/signal untouched — those keep running off stable daily
+    closes, so a thin, volatile after-hours print can never flip a BUY/SELL
+    gate on its own. See data_fetcher.get_live_quote.
+    """
+    try:
+        quote = get_live_quote(ticker)
+    except Exception as exc:
+        logger.warning("Live quote unavailable for %s, keeping last close: %s", ticker, exc)
+        return
+
+    signal.live_price = quote.price
+    signal.roi_pct = (quote.price - signal.wac) / signal.wac if signal.wac > 0 else 0.0
+    signal.pct_from_anchor = (
+        (quote.price - signal.anchor_price) / signal.anchor_price if signal.anchor_price > 0 else 0.0
+    )
+    signal.is_after_hours = quote.is_after_hours
 
 
 @router.get("/sector-strength", response_model=list[schemas.SectorRankOut])
@@ -112,7 +135,9 @@ def run_decision_engine(
             logger.warning("Skipping %s: %s", holding.ticker, exc)
             continue
 
-        # Audit trail: every evaluation is logged, not just the ones that fire.
+        # Audit trail records the pure daily-close basis that actually
+        # determined the gate — logged BEFORE the live-quote override below,
+        # so it never mixes an after-hours price with a daily-close anchor.
         db.add(models.SignalLog(
             ticker=signal.ticker,
             signal_type=signal.signal,
@@ -125,6 +150,9 @@ def run_decision_engine(
             trend=signal.trend,
             suggested_sell_pct=signal.suggested_sell_pct,
         ))
+
+        # Only the API response gets the fresher price — see _apply_live_quote.
+        _apply_live_quote(signal, holding.ticker)
 
         # Keep the cached high-water mark on the holding row current so the
         # ledger UI can show it without recomputing on every render.
@@ -162,6 +190,7 @@ def run_decision_engine_for_ticker(ticker: str, db: Session = Depends(get_db)):
         wac=float(holding.wac),
         close_prices=close_series,
     )
+    _apply_live_quote(signal, holding.ticker)
 
     sector_label = TICKER_SECTOR_MAP.get(holding.ticker)
     sector_rank_info = None
