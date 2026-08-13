@@ -111,6 +111,21 @@ export interface ReinvestmentRecommendationOut {
   style_tilt_note: string | null;
 }
 
+export interface PerformancePointOut {
+  date: string;
+  portfolio_value: number;
+  portfolio_return_pct: number | null;
+  benchmark_return_pct: Record<string, number | null>;
+}
+
+export interface PerformanceHistoryOut {
+  points: PerformancePointOut[];
+  net_contributions: number;
+  portfolio_return_pct: number | null;
+  benchmark_return_pct: Record<string, number | null>;
+  benchmark_labels: Record<string, string>;
+}
+
 export interface ParkCashRequest {
   amount?: number;
   ticker?: string;

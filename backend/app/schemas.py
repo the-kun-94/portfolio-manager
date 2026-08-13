@@ -139,6 +139,24 @@ class ReinvestmentRecommendationOut(BaseModel):
     style_tilt_note: Optional[str] = None  # set only when the tilt is worth a second look
 
 
+# ---------------------------------------------------------------------------
+# Performance vs. Benchmark chart
+# ---------------------------------------------------------------------------
+class PerformancePointOut(BaseModel):
+    date: str        # ISO date, YYYY-MM-DD
+    portfolio_value: float
+    portfolio_return_pct: Optional[float] = None
+    benchmark_return_pct: dict[str, Optional[float]] = {}
+
+
+class PerformanceHistoryOut(BaseModel):
+    points: list[PerformancePointOut] = []
+    net_contributions: float = 0.0
+    portfolio_return_pct: Optional[float] = None
+    benchmark_return_pct: dict[str, Optional[float]] = {}
+    benchmark_labels: dict[str, str] = {}   # ticker -> display name, e.g. {"SPY": "S&P 500"}
+
+
 class ParkCashRequest(BaseModel):
     amount: Optional[float] = Field(default=None, gt=0)   # omit to park the full cash balance
     ticker: Optional[str] = None                            # omit to use the recommended ETF

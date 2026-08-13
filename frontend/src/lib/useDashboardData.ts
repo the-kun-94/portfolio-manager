@@ -7,6 +7,7 @@ import type {
   CashSummary,
   SectorRankOut,
   ReinvestmentRecommendationOut,
+  PerformanceHistoryOut,
 } from "./types";
 
 // How often the terminal re-polls the Engine. The backend caches yfinance
@@ -21,6 +22,7 @@ interface DashboardData {
   trades: TransactionOut[];
   sectorRanks: SectorRankOut[];
   reinvestment: ReinvestmentRecommendationOut | null;
+  performance: PerformanceHistoryOut | null;
   loading: boolean;
   error: string | null;
   lastUpdated: Date | null;
@@ -34,6 +36,7 @@ export function useDashboardData(): DashboardData {
   const [trades, setTrades] = useState<TransactionOut[]>([]);
   const [sectorRanks, setSectorRanks] = useState<SectorRankOut[]>([]);
   const [reinvestment, setReinvestment] = useState<ReinvestmentRecommendationOut | null>(null);
+  const [performance, setPerformance] = useState<PerformanceHistoryOut | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -41,20 +44,23 @@ export function useDashboardData(): DashboardData {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [signalsRes, holdingsRes, cashRes, tradesRes, sectorRes, reinvestmentRes] = await Promise.all([
-        api.decisionEngine(false),
-        api.holdings(),
-        api.cashSummary(),
-        api.recentTrades(10),
-        api.sectorStrength(),
-        api.reinvestmentRecommendation(),
-      ]);
+      const [signalsRes, holdingsRes, cashRes, tradesRes, sectorRes, reinvestmentRes, performanceRes] =
+        await Promise.all([
+          api.decisionEngine(false),
+          api.holdings(),
+          api.cashSummary(),
+          api.recentTrades(10),
+          api.sectorStrength(),
+          api.reinvestmentRecommendation(),
+          api.performanceHistory(),
+        ]);
       setSignals(signalsRes);
       setHoldings(holdingsRes);
       setCash(cashRes);
       setTrades(tradesRes);
       setSectorRanks(sectorRes);
       setReinvestment(reinvestmentRes);
+      setPerformance(performanceRes);
       setError(null);
       setLastUpdated(new Date());
     } catch (err) {
@@ -77,6 +83,7 @@ export function useDashboardData(): DashboardData {
     trades,
     sectorRanks,
     reinvestment,
+    performance,
     loading,
     error,
     lastUpdated,

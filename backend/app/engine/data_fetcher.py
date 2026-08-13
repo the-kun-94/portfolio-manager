@@ -13,6 +13,7 @@ from app.config import (
     PRICE_HISTORY_PERIOD,
     PRICE_HISTORY_INTERVAL,
     QUOTE_CACHE_TTL_SECONDS,
+    FULL_HISTORY_CACHE_TTL_SECONDS,
 )
 
 
@@ -124,3 +125,30 @@ def get_live_quote(ticker: str, force_refresh: bool = False) -> LiveQuote:
 def get_live_price(ticker: str) -> float:
     """Current tradeable price — see get_live_quote for the after-hours logic."""
     return get_live_quote(ticker).price
+
+
+_full_history_cache: dict[str, _CacheEntry] = {}
+
+
+def get_full_close_series(ticker: str, force_refresh: bool = False) -> pd.Series:
+    """
+    Full available daily-close history for `ticker` (period="max"), tz-naive
+    and normalized to midnight so it can be reindexed against dates pulled
+    straight from the database. Used by the performance-vs-benchmark chart,
+    which needs history back to the portfolio's inception rather than the
+    rolling window get_close_series keeps for the Decision Engine — cached
+    separately (and longer) so the two caches can't thrash each other.
+    """
+    cached = _full_history_cache.get(ticker)
+    now = time.time()
+    if not force_refresh and cached and (now - cached.fetched_at) < FULL_HISTORY_CACHE_TTL_SECONDS:
+        return cached.data
+
+    history = yf.Ticker(ticker).history(period="max", interval="1d", auto_adjust=True)
+    if history.empty:
+        raise ValueError(f"yfinance returned no price history for '{ticker}'")
+
+    close_series = history["Close"].dropna()
+    close_series.index = close_series.index.tz_localize(None).normalize()
+    _full_history_cache[ticker] = _CacheEntry(fetched_at=now, data=close_series)
+    return close_series

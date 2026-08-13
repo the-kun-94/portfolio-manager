@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import CommandHeader from "../components/CommandHeader";
 import ActionFeed from "../components/ActionFeed";
+import PerformanceChart from "../components/PerformanceChart";
 import PortfolioTable from "../components/PortfolioTable";
 import DualGateLedger from "../components/DualGateLedger";
 import SectorStrengthPanel from "../components/SectorStrengthPanel";
@@ -12,8 +13,19 @@ import { useDashboardData } from "../lib/useDashboardData";
 import { useSessionRole } from "../lib/useSessionRole";
 
 const Home: NextPage = () => {
-  const { signals, holdings, cash, trades, sectorRanks, reinvestment, loading, error, lastUpdated, refresh } =
-    useDashboardData();
+  const {
+    signals,
+    holdings,
+    cash,
+    trades,
+    sectorRanks,
+    reinvestment,
+    performance,
+    loading,
+    error,
+    lastUpdated,
+    refresh,
+  } = useDashboardData();
   const role = useSessionRole();
   const readOnly = role === "read";
 
@@ -38,6 +50,7 @@ const Home: NextPage = () => {
         />
         <main className="terminal-main">
           <ActionFeed signals={signals} />
+          <PerformanceChart history={performance} />
           <PortfolioTable signals={signals} />
           <DualGateLedger signals={signals} />
           <SectorStrengthPanel ranks={sectorRanks} />

@@ -8,6 +8,7 @@ import type {
   ReinvestmentRecommendationOut,
   ParkCashRequest,
   UnparkRequest,
+  PerformanceHistoryOut,
 } from "./types";
 
 // Every request goes through our own same-origin proxy (/api/proxy/*)
@@ -87,6 +88,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify(body),
     }),
+
+  performanceHistory: () => request<PerformanceHistoryOut>("/api/performance/history"),
 };
 
 export { ApiError };
