@@ -661,6 +661,93 @@ select {
 }
 
 /* ---------------------------------------------------------------------- */
+/* Performance vs. Benchmark chart                                        */
+/* ---------------------------------------------------------------------- */
+
+.performance-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.performance-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.performance-stat-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.performance-stat-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.performance-line-key {
+  display: inline-block;
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+.performance-chart-wrap {
+  position: relative;
+}
+
+.performance-axis-label {
+  font-size: 10px;
+  fill: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+.performance-tooltip {
+  position: absolute;
+  top: 8px;
+  transform: translateX(-50%);
+  background: var(--panel-bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 11px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.performance-tooltip-date {
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+
+.performance-tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+}
+
+.performance-tooltip-label {
+  color: var(--text-dim);
+  margin-right: 8px;
+}
+
+.performance-tooltip-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* ---------------------------------------------------------------------- */
 /* Shared accent utilities                                                */
 /* ---------------------------------------------------------------------- */
 

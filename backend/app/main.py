@@ -24,7 +24,7 @@ from app.auth import get_access_level
 from app.database import engine, SessionLocal, Base
 from app import models
 from app.config import TIER_CONFIG, CORS_ORIGINS
-from app.routers import signals, trades, portfolio, cash, reinvestment
+from app.routers import signals, trades, portfolio, cash, reinvestment, performance
 
 app = FastAPI(
     title="The Kun Algorithm",
@@ -46,6 +46,7 @@ app.include_router(trades.router, dependencies=_auth)
 app.include_router(portfolio.router, dependencies=_auth)
 app.include_router(cash.router, dependencies=_auth)
 app.include_router(reinvestment.router, dependencies=_auth)
+app.include_router(performance.router, dependencies=_auth)
 
 
 @app.on_event("startup")

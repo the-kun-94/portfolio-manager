@@ -191,3 +191,19 @@ TICKER_SECTOR_MAP: dict[str, str] = {
     "RKLB": "Industrials",
     "AAOI": "Technology",
 }
+
+# ---------------------------------------------------------------------------
+# Performance vs. Benchmark chart
+# ---------------------------------------------------------------------------
+# Full-history pulls (period="max") are heavier than the rolling-window ones
+# get_close_series keeps for the Decision Engine, and this chart isn't part
+# of the dashboard's 30s poll — cache longer.
+FULL_HISTORY_CACHE_TTL_SECONDS = 300
+
+# Capped at 2: the categorical palette's first three slots (portfolio +
+# these) are the only ones validated CVD-safe as a simultaneous, all-pairs-
+# visible set on the dashboard's dark theme — see PerformanceChart.tsx.
+PERFORMANCE_BENCHMARKS: dict[str, str] = {
+    "SPY": "S&P 500",
+    "QQQ": "Nasdaq 100",
+}
