@@ -1,6 +1,7 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import CommandHeader from "../components/CommandHeader";
+import LoadDiagnostics from "../components/LoadDiagnostics";
 import ActionFeed from "../components/ActionFeed";
 import PerformanceChart from "../components/PerformanceChart";
 import PortfolioTable from "../components/PortfolioTable";
@@ -48,6 +49,7 @@ const Home: NextPage = () => {
           onRefresh={refresh}
           readOnly={readOnly}
         />
+        <LoadDiagnostics />
         <main className="terminal-main">
           <ActionFeed signals={signals} />
           <PerformanceChart history={performance} />

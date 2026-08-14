@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
+import { resetTrace } from "./loadTrace";
 import type {
   SignalOut,
   HoldingOut,
@@ -43,6 +44,7 @@ export function useDashboardData(): DashboardData {
 
   const load = useCallback(async () => {
     setLoading(true);
+    resetTrace();
     try {
       const [signalsRes, holdingsRes, cashRes, tradesRes, sectorRes, reinvestmentRes, performanceRes] =
         await Promise.all([

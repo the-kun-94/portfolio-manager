@@ -298,6 +298,128 @@ select {
 }
 
 /* ---------------------------------------------------------------------- */
+/* Load Diagnostics                                                       */
+/* ---------------------------------------------------------------------- */
+
+.load-diagnostics {
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.load-diagnostics-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-top: 10px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  cursor: pointer;
+  text-align: left;
+}
+
+.load-diagnostics-toggle:hover {
+  border-color: var(--border-strong);
+}
+
+.load-diagnostics-caret {
+  margin-left: auto;
+  color: var(--text-faint);
+}
+
+.trace-summary-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.load-diagnostics-list {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.load-diagnostics-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-bg);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  flex-wrap: wrap;
+}
+
+.trace-icon {
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.trace-path {
+  color: var(--text);
+}
+
+.trace-attempt {
+  color: var(--amber);
+  font-size: 10px;
+}
+
+.trace-duration {
+  color: var(--text-faint);
+  margin-left: auto;
+}
+
+.trace-detail {
+  flex-basis: 100%;
+  color: var(--text-faint);
+  font-size: 10px;
+}
+
+.trace-ok .trace-icon,
+.trace-ok.trace-summary-dot {
+  color: var(--green);
+}
+
+.trace-ok.trace-summary-dot {
+  background: var(--green);
+}
+
+.trace-error .trace-icon {
+  color: var(--red);
+}
+
+.trace-error.trace-summary-dot {
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+}
+
+.trace-retrying .trace-icon {
+  color: var(--amber);
+}
+
+.trace-retrying.trace-summary-dot {
+  background: var(--amber);
+  box-shadow: 0 0 8px var(--amber);
+}
+
+.trace-pending .trace-icon {
+  color: var(--text-dim);
+}
+
+/* ---------------------------------------------------------------------- */
 /* Action Feed                                                            */
 /* ---------------------------------------------------------------------- */
 
